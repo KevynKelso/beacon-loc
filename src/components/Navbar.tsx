@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSubscription } from 'mqtt-react-hooks'
 
 import Button from 'react-bootstrap/Button'
 import FiltersModal from './FiltersModal'
@@ -23,6 +24,13 @@ export default function Navbar() {
     e.preventDefault()
     setShowSettingsModal(true)
   }
+
+  const { message } = useSubscription('test');
+
+  useEffect(() => {
+    console.log(message)
+  }, [message])
+
 
   return (
     <div>

@@ -14,7 +14,8 @@ export default function Status() {
    */
   const { connectionStatus } = useMqttState();
   const badgeConnectionColor: string =
-    connectionStatus == "Connecting" ? "success" : "secondary"
+    connectionStatus === "Connecting" ? "warning" :
+      connectionStatus === "Connected" ? "success" : "secondary"
 
   return (
     <div>
