@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useSubscription } from 'mqtt-react-hooks'
+import React, { useState } from "react";
 
 import Button from 'react-bootstrap/Button'
 import FiltersModal from './FiltersModal'
-import SettingsModal from './SettingsModal'
+import SettingsModal, { ISettings } from './SettingsModal'
 
-export default function Navbar() {
+interface NavbarProps {
+  setSettings: (settings: ISettings) => void
+}
+
+export default function Navbar(props: NavbarProps) {
   const [showFilterBeaconsModal, setShowFilterBeaconsModal] = useState(false)
   const [showFilterListenersModal, setShowFilterListenersModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
@@ -24,13 +27,6 @@ export default function Navbar() {
     e.preventDefault()
     setShowSettingsModal(true)
   }
-
-  const { message } = useSubscription('test');
-
-  useEffect(() => {
-    console.log(message)
-  }, [message])
-
 
   return (
     <div>
@@ -70,6 +66,7 @@ export default function Navbar() {
       >
       </FiltersModal>
       <SettingsModal
+        setSettings={props.setSettings}
         setShow={setShowSettingsModal}
         show={showSettingsModal}
       >
