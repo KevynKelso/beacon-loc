@@ -6,7 +6,7 @@ import time
 import paho.mqtt.client as mqtt
 
 listener_names = "A B C D".split()
-NUM_MESSAGES = 500
+NUM_MESSAGES = 50
 
 
 def get_random_element_from_list(li: list) -> str:
@@ -85,7 +85,7 @@ def main():
 
     for i in range(0, NUM_MESSAGES):
         client.publish("test", json.dumps(generate_random_dummy_data()))
-        time.sleep(0.1)
+        time.sleep(0.5)
 
     # publish_beacon_is_definately_at_listener_B(client)
 

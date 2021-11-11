@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useSubscription } from 'mqtt-react-hooks'
 
+import BeaconMap from './BeaconMap'
+import Button from 'react-bootstrap/Button'
+import Navbar from './Navbar'
+import SideBar from './SideBar'
+import { ISettings, DefaultSettings } from './SettingsModal'
+
 import Table from 'react-bootstrap/Table'
 
 interface MqttBridgePublish {
-  listenerCoordinates: number[]
-  timestamp: number
-  listenerName: string
   beaconMac: string
+  listenerCoordinates: number[]
+  listenerName: string
   rssi: number
+  timestamp: number
 }
 
-interface PublishedDevice extends MqttBridgePublish {
+export interface PublishedDevice extends MqttBridgePublish {
   seenTimestamp: number
-}
-
-interface MqttListenerProps {
-  debugMode: boolean
-  definitivelyHereRSSI: number
-  localTimeout: number
 }
 
 function getCurrentTimestamp(): number {
@@ -28,37 +28,56 @@ function getCurrentTimestamp(): number {
   return parseInt(`${String(date.getFullYear()).padStart(4, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`)
 }
 
-export default function MqttListener(props: MqttListenerProps) {
+export default function MqttListener() {
   const { message } = useSubscription('test');
-  const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [numberOfReceivedMessages, setNumberOfReceivedMessages] = useState<number>(0)
+  const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
+  const [settings, setSettings] = useState<ISettings>(DefaultSettings)
+  const [showTable, setShowTable] = useState<boolean>(false)
 
   function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
     const message = JSON.parse(JSONMessage)
 
     if (!message || !message.listenerCoordinates || !message.timestamp ||
       !message.listenerName || !message.beaconMac || !message.rssi) {
-      console.log("Mqtt message is not of type MqttBridgePublish", message)
+      console.error("Mqtt message is not of type MqttBridgePublish", message)
       return
     }
 
     if (message.listenerCoordinates.length != 2) {
-      console.log("Invalid coordinates", message.listenerCoordinates)
+      console.error("Invalid coordinates", message.listenerCoordinates)
       return
     }
 
     const publishMessage: PublishedDevice = {
-      listenerCoordinates: message.listenerCoordinates,
-      timestamp: message.timestamp,
-      listenerName: message.listenerName,
       beaconMac: message.beaconMac,
+      listenerCoordinates: message.listenerCoordinates,
+      listenerName: message.listenerName,
       rssi: message.rssi,
       seenTimestamp: message.timestamp,
+      timestamp: message.timestamp,
     }
 
     return publishMessage
   }
 
+  function pushDevicesUpdate(device: PublishedDevice, newDevice: boolean, index?: number): void {
+    if (newDevice) {
+      publishedDevices.push(device)
+      setPublishedDevices(publishedDevices)
+      return
+    }
+
+    if (index === undefined) {
+      console.error("Must pass an index")
+      return
+    }
+
+    publishedDevices[index] = device
+    setPublishedDevices(publishedDevices)
+  }
+
+  // main logic for incomming messages
   useEffect(() => {
     if (!message?.message || typeof message.message != "string") return
     const receivedMessage: PublishedDevice | undefined = validateMqttMessage(message.message)
@@ -67,9 +86,7 @@ export default function MqttListener(props: MqttListenerProps) {
 
     // check if beaconMac is in publishedDevices
     if (!publishedDevices.some((e: MqttBridgePublish) => e.beaconMac === receivedMessage.beaconMac)) {
-      publishedDevices.push(receivedMessage)
-      setPublishedDevices(publishedDevices)
-      return
+      return pushDevicesUpdate(receivedMessage, true)
     }
 
     // from this point on, beacon is in publishedDevices already (we've seen it
@@ -77,34 +94,26 @@ export default function MqttListener(props: MqttListenerProps) {
     const index: number = publishedDevices.map(e => e.beaconMac).indexOf(receivedMessage.beaconMac)
 
     // it is definately at this listener if this is the case
-    if (receivedMessage.rssi >= props.definitivelyHereRSSI) {
-      publishedDevices[index] = receivedMessage
-      setPublishedDevices(publishedDevices)
-      return
+    if (receivedMessage.rssi >= settings.definitivelyHereRSSI) {
+      return pushDevicesUpdate(receivedMessage, false, index)
     }
 
     const publishedDevice: PublishedDevice = publishedDevices[index]
 
     // receive an update from the same device we've seen before
     if (receivedMessage.listenerName === publishedDevice.listenerName) {
-      publishedDevices[index] = receivedMessage
-      setPublishedDevices(publishedDevices)
-      return
+      return pushDevicesUpdate(receivedMessage, false, index)
     }
 
     // larger rssi's take priority
     if (receivedMessage.rssi > publishedDevice.rssi) {
-      publishedDevices[index] = receivedMessage
-      setPublishedDevices(publishedDevices)
-      return
+      return pushDevicesUpdate(receivedMessage, false, index)
     }
 
     // check if it's too old of information, if it is, we update with new info
     const currentTime: number = getCurrentTimestamp()
-    if (publishedDevice.timestamp + props.localTimeout < currentTime) {
-      publishedDevices[index] = receivedMessage
-      setPublishedDevices(publishedDevices)
-      return
+    if (publishedDevice.timestamp + settings.localTimeout < currentTime) {
+      return pushDevicesUpdate(receivedMessage, false, index)
     }
 
     // we see the beacon, but it is not here
@@ -113,35 +122,8 @@ export default function MqttListener(props: MqttListenerProps) {
   }, [message])
 
   return (
-    <>
-      <p>Received Messages {numberOfReceivedMessages}</p>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>index</th>
-            <th>mac</th>
-            <th>coordinates</th>
-            <th>timestamp</th>
-            <th>rssi</th>
-            <th>bridge</th>
-          </tr>
-        </thead>
-        <tbody>
-          {publishedDevices.map((element: MqttBridgePublish, idx: number) => {
-            return (
-              <tr>
-                <td>{idx}</td>
-                <td>{element.beaconMac}</td>
-                <td>{element.listenerCoordinates[0]}, {element.listenerCoordinates[1]}</td>
-                <td>{element.timestamp}</td>
-                <td>{element.rssi}</td>
-                <td>{element.listenerName}</td>
-              </tr>
-            )
-          })
-          }
-        </tbody>
-      </Table>
-    </>
+    <div>
+      <BeaconMap setSettings={setSettings} devices={publishedDevices} />
+    </div>
   );
 }

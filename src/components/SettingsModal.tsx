@@ -7,10 +7,17 @@ import Modal from 'react-bootstrap/Modal'
 import Status from './Status';
 
 export interface ISettings {
-  debugMode: boolean
   definitivelyHereRSSI: number  // dB
   globalTimeout: number         // seconds
   localTimeout: number          // seconds
+  //mapUpateTime: number          // seconds
+}
+
+export const DefaultSettings: ISettings = {
+  definitivelyHereRSSI: -40, //-40 dB might be a good default idk
+  globalTimeout: 5 * 60,     // 5 mins
+  localTimeout: 5,           // 5 seconds
+  //mapUpateTime: 1 * 60,
 }
 
 interface SettingsModalProps {
@@ -20,19 +27,11 @@ interface SettingsModalProps {
   show: boolean
 }
 
-export const DefaultSettings: ISettings = {
-  debugMode: false,
-  definitivelyHereRSSI: -40,
-  globalTimeout: 5 * 60,
-  localTimeout: 5,
-}
-
 export default function SettingsModal(props: SettingsModalProps) {
 
   const [definitivelyHereRSSI, setDefinitivelyHereRSSI] = useState<number>(DefaultSettings.definitivelyHereRSSI)
   const [localTimeout, setLocalTimeout] = useState<number>(DefaultSettings.localTimeout)
   const [globalTimeout, setGlobalTimeout] = useState<number>(DefaultSettings.globalTimeout)
-  const [debugMode, setDebugMode] = useState<boolean>(DefaultSettings.debugMode)
 
   function onChangeDefinitivelyHereRSSI(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault()
@@ -52,17 +51,40 @@ export default function SettingsModal(props: SettingsModalProps) {
     setGlobalTimeout(value || DefaultSettings.globalTimeout)
   }
 
+
   function onSubmitSettings() {
     const settings: ISettings = {
-      debugMode: debugMode,
       definitivelyHereRSSI: definitivelyHereRSSI,
       globalTimeout: globalTimeout,
       localTimeout: localTimeout,
+      //mapUpateTime: mapUpdateTime,
     }
 
     props.setSettings(settings)
     props.setShow(false)
   }
+
+  // we might not need this after all
+  //
+  //const GOOGLE_API_REQUEST_COST: number = 0.007
+  //const [mapUpdateTime, setMapUpdateTime] = useState<number>(DefaultSettings.mapUpateTime)
+  //function onChangeMapUpdateTime(e: React.ChangeEvent<HTMLInputElement>) {
+  //e.preventDefault()
+  //const value: number = parseInt(e.target.value, 10)
+  //setMapUpdateTime(value || DefaultSettings.mapUpateTime)
+  //}
+  //<Form.Group className="mt-5" controlId="formGlobalTimeout">
+  //<Form.Label>Map update time: {mapUpdateTime} seconds</Form.Label>
+  //<Form.Control type="number" onChange={onChangeMapUpdateTime} />
+  //<Form.Text className="text-muted">
+  //Time required for map to update if there is a change in beacon whereabouts
+  //</Form.Text>
+  //<div>
+  //<Form.Text className="text-red-500">
+  //Estimated runtime cost: {Math.round(GOOGLE_API_REQUEST_COST * (3600 / mapUpdateTime) * 1e4) / 1e4} USD per hour
+  //</Form.Text>
+  //</div>
+  //</Form.Group>
 
   return (
     <Modal show={props.show} fullscreen={"lg-down"} onHide={() => props.setShow(false)}>
@@ -96,12 +118,6 @@ export default function SettingsModal(props: SettingsModalProps) {
               If a bridge sees an RSSI this good, it is definately at that bridge
             </Form.Text>
           </Form.Group>
-
-          <Form.Switch
-            className="mt-5"
-            label="Toggle debug mode"
-            onChange={() => setDebugMode(!debugMode)}
-          />
         </Form>
 
         <div className="grid mt-5">
