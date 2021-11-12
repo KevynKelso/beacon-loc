@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+import { useMqttState } from 'mqtt-react-hooks';
+
 import Button from 'react-bootstrap/Button'
 import SettingsModal, { ISettings } from './SettingsModal'
 
@@ -11,6 +13,11 @@ interface NavbarProps {
 export default function Navbar(props: NavbarProps) {
   const [showSettingsModal, setShowSettingsModal] = useState(false)
 
+  const { connectionStatus } = useMqttState();
+  const settingsButtonColor: string =
+    connectionStatus === "Connecting" ? "outline-warning" :
+      connectionStatus === "Connected" ? "outline-success" : "outline-secondary"
+
   function openSettingsModal(e: React.MouseEvent): void {
     e.preventDefault()
     setShowSettingsModal(true)
@@ -20,7 +27,7 @@ export default function Navbar(props: NavbarProps) {
     <div className={props.className}>
       <Button
         onClick={(e) => openSettingsModal(e)}
-        variant="outline-primary"
+        variant={settingsButtonColor}
       >
         Settings
       </Button>

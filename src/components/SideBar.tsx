@@ -1,27 +1,40 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import Button from 'react-bootstrap/Button'
-import Card from 'react-bootstrap/Card'
 import Table from 'react-bootstrap/Table'
 
-import FiltersBar from './FiltersBar'
+import FiltersBar, { Filters, BridgeOrBeacon } from './FiltersBar'
 import NavBar from './Navbar'
-import { DetectedListener } from './BeaconMap'
+import { DetectedBridge } from './BeaconMap'
 import { ISettings } from './SettingsModal'
 
 interface SideBarProps {
   className?: string
   detectedDevicesSum: number
-  listeners: DetectedListener[]
+  bridges: DetectedBridge[]
   setSettings: (settings: ISettings) => void
+  filters: Filters
+  setFilters: (filters: Filters) => void
 }
 
 export default function SideBar(props: SideBarProps) {
   const [showBridges, setShowBridges] = useState<boolean>(true)
 
+  function updateFilters(type: BridgeOrBeacon, elements: string[]) {
+    if (type === 'BRIDGE') {
+      return props.setFilters({ beacons: props.filters.beacons, bridges: elements })
+    }
+
+    if (type === 'BEACON') {
+      return props.setFilters({ beacons: elements, bridges: props.filters.bridges })
+    }
+  }
+
+  // TODO: add scrolling
+  // TODO: do something about bridge names being too long
   return (
     <div className={props.className} >
-      <div className="shadow-md absolute bg-gray-100">
+      <div className={showBridges ? "shadow-md absolute bg-gray-100" : "absolute"}>
         <div className="flex m-3">
           <Button
             onClick={() => setShowBridges(!showBridges)}
@@ -34,9 +47,9 @@ export default function SideBar(props: SideBarProps) {
         {showBridges &&
           <div className="m-3">
             <h3>Detected bridges</h3>
-            {props.listeners.length > 0 ?
+            {props.bridges.length > 0 ?
               <div>
-                <Table striped borderless hover className='whitespace-nowrap'>
+                <Table striped borderless hover className='whitespace-nowrap max-w-1/3'>
                   <thead>
                     <tr>
                       <th>Bridge</th>
@@ -44,13 +57,18 @@ export default function SideBar(props: SideBarProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {props.listeners.map((d: DetectedListener) => {
-                      return (
-                        <tr onClick={() => console.log('hello!')}>
-                          <td>{d.listenerName}</td>
-                          <td>{d.numberOfBeacons}</td>
-                        </tr>
-                      )
+                    {props.bridges.map((d: DetectedBridge) => {
+                      // if this bridge is not in the filters (-1), show it
+                      if (props.filters.bridges.indexOf(d.listenerName) === -1) {
+                        return (
+                          // TODO: when row is clicked, display additional information
+                          // TODO: make visual cue row is clickable
+                          <tr onClick={() => console.log('hello!')}>
+                            <td>{d.listenerName}</td>
+                            <td>{d.numberOfBeacons}</td>
+                          </tr>
+                        )
+                      }
                     })}
                   </tbody>
                 </Table>
@@ -58,7 +76,12 @@ export default function SideBar(props: SideBarProps) {
               </div>
               : <p>No bridges publishing</p>
             }
-            <FiltersBar />
+            <FiltersBar
+              availableBeacons={["test", "tes"]}
+              availableBridges={props.bridges.map((d: DetectedBridge) => d.listenerName)}
+              updateFilters={updateFilters}
+              existingFilters={props.filters}
+            />
           </div>
         }
       </div>

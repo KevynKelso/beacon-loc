@@ -4,52 +4,79 @@ import Button from 'react-bootstrap/Button'
 
 import FiltersModal from './FiltersModal'
 
-interface FiltersBarProps {
+export type BridgeOrBeacon = 'BRIDGE' | 'BEACON'
+
+export interface Filters {
+  bridges: string[]
+  beacons: string[]
 }
 
-export default function FiltersBar() {
+interface FiltersBarProps {
+  availableBeacons?: string[]
+  availableBridges?: string[]
+  updateFilters: (type: BridgeOrBeacon, elements: string[]) => void
+  existingFilters: Filters
+}
+
+export default function FiltersBar(props: FiltersBarProps) {
   const [showFilterBeaconsModal, setShowFilterBeaconsModal] = useState(false)
-  const [showFilterListenersModal, setShowFilterListenersModal] = useState(false)
+  const [showFilterBridgesModal, setShowFilterBridgesModal] = useState(false)
+
+  const filterBeaconsTitle: string = "Filter beacons"
+  const filterBridgesTitle: string = "Filter bridges"
 
   function openFilterBeaconsModal(e: React.MouseEvent): void {
     e.preventDefault()
     setShowFilterBeaconsModal(true)
   }
 
-  function openFilterListenersModal(e: React.MouseEvent): void {
+  function openFilterBridgesModal(e: React.MouseEvent): void {
     e.preventDefault()
-    setShowFilterListenersModal(true)
+    setShowFilterBridgesModal(true)
   }
 
   return (
     <div className="flex mt-3">
-      <Button
-        onClick={(e) => openFilterBeaconsModal(e)}
-        variant="primary"
-      >
-        Filter Beacons
-      </Button>
-
-      <Button
-        onClick={(e) => openFilterListenersModal(e)}
-        className='ml-2'
-        variant="primary"
-      >
-        Filter Listeners
-      </Button>
-      <FiltersModal
-        setShow={setShowFilterBeaconsModal}
-        show={showFilterBeaconsModal}
-        title="Filter beacons"
-      >
-
-      </FiltersModal>
-      <FiltersModal
-        setShow={setShowFilterListenersModal}
-        show={showFilterListenersModal}
-        title="Filter listeners"
-      >
-      </FiltersModal>
+      {
+        props.availableBeacons?.length ?
+          <>
+            <Button
+              onClick={(e) => openFilterBeaconsModal(e)}
+              variant="primary"
+            >
+              {filterBeaconsTitle}
+            </Button>
+            <FiltersModal
+              existingFilters={props.existingFilters.beacons}
+              availableItems={props.availableBeacons}
+              setFilters={(elements: string[]) => props.updateFilters('BEACON', elements)}
+              setShow={setShowFilterBeaconsModal}
+              show={showFilterBeaconsModal}
+              title={filterBeaconsTitle}
+            />
+          </>
+          : null
+      }
+      {props.availableBridges?.length ?
+        <>
+          <Button
+            onClick={(e) => openFilterBridgesModal(e)}
+            className='ml-2'
+            variant="primary"
+          >
+            {filterBridgesTitle}
+          </Button>
+          <FiltersModal
+            availableItems={props.availableBridges}
+            existingFilters={props.existingFilters.bridges}
+            setFilters={(elements: string[]) => props.updateFilters('BRIDGE', elements)}
+            setShow={setShowFilterBridgesModal}
+            show={showFilterBridgesModal}
+            title={filterBridgesTitle}
+          />
+        </>
+        : null
+      }
     </div>
   );
 }

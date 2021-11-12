@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Connector } from 'mqtt-react-hooks'
-//import BeaconMap from './components/BeaconMap'
+import Environment from './environment.config'
 import MqttListener from './components/MqttListener'
+import { Connector } from 'mqtt-react-hooks'
 
 
 import './App.css';
@@ -12,10 +12,8 @@ function App() {
 
   return (
     <>
-      <Connector brokerUrl="ws://localhost:9001" options={{ keepalive: 0 }}>
-        <div className="mt-2">
-          <MqttListener />
-        </div>
+      <Connector brokerUrl={Environment().mqttBrokerUrl} options={{ keepalive: 0 }}>
+        <MqttListener />
       </Connector>
     </>
   );
