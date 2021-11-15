@@ -6,9 +6,9 @@ import time
 import paho.mqtt.client as mqtt
 
 NUM_MESSAGES = 100
-NUM_LISTENERS = 10
+NUM_LISTENERS = 5
 MAX_DIST = 0.02
-TIME_BETWEEN_MSG = 0.1
+TIME_BETWEEN_MSG = 0.2
 
 
 def get_random_element_from_list(li: list, max_num: int) -> str:
@@ -91,10 +91,6 @@ def main():
     for i in range(0, NUM_MESSAGES):
         client.publish("test", json.dumps(generate_random_dummy_data(listener_names)))
         time.sleep(TIME_BETWEEN_MSG)
-
-    # publish_beacon_is_definately_at_listener_B(client)
-
-    # client.loop_forever()
 
 
 if __name__ == "__main__":

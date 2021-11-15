@@ -16,7 +16,7 @@ export default function Navbar(props: NavbarProps) {
   const { connectionStatus } = useMqttState();
   const settingsButtonColor: string =
     connectionStatus === "Connecting" ? "outline-warning" :
-      connectionStatus === "Connected" ? "outline-success" : "outline-secondary"
+      connectionStatus === "Connected" ? "outline-success" : "outline-danger"
 
   function openSettingsModal(e: React.MouseEvent): void {
     e.preventDefault()

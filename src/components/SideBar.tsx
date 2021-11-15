@@ -15,6 +15,7 @@ interface SideBarProps {
   setSettings: (settings: ISettings) => void
   filters: Filters
   setFilters: (filters: Filters) => void
+  onTableClick: (d: DetectedBridge) => void
 }
 
 export default function SideBar(props: SideBarProps) {
@@ -31,7 +32,6 @@ export default function SideBar(props: SideBarProps) {
   }
 
   // TODO: add scrolling
-  // TODO: do something about bridge names being too long
   return (
     <div className={props.className} >
       <div className={showBridges ? "shadow-md absolute bg-gray-100" : "absolute"}>
@@ -53,18 +53,20 @@ export default function SideBar(props: SideBarProps) {
                   <thead>
                     <tr>
                       <th>Bridge</th>
-                      <th>Number of devices at bridge</th>
+                      <th>Devices</th>
                     </tr>
                   </thead>
                   <tbody>
                     {props.bridges.map((d: DetectedBridge) => {
                       // if this bridge is not in the filters (-1), show it
+                      const truncatedName: string = d.listenerName.substring(0, 15)
                       if (props.filters.bridges.indexOf(d.listenerName) === -1) {
                         return (
                           // TODO: when row is clicked, display additional information
-                          // TODO: make visual cue row is clickable
-                          <tr onClick={() => console.log('hello!')}>
-                            <td>{d.listenerName}</td>
+                          <tr onClick={() => props.onTableClick(d)}>
+                            <td className="underline text-blue-500">
+                              {truncatedName}
+                            </td>
                             <td>{d.numberOfBeacons}</td>
                           </tr>
                         )

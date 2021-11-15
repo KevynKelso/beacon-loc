@@ -20,7 +20,6 @@ export interface DetectedBridge {
 interface showInfoWindow {
   activeMarker: Marker | null
   listener?: DetectedBridge
-  selectedPlace?: IMarkerProps
   showingInfoWindow: boolean
 }
 
@@ -36,6 +35,7 @@ export function BeaconMap(props: BeaconMapProps) {
   const [showingInfoWindow, setShowingInfoWindow] = useState<showInfoWindow>()
   // if it's in the filters, we want to ignore it
   const [filters, setFilters] = useState<Filters>({ beacons: [], bridges: [] })
+  const [infoVisible, setInfoVisible] = useState<boolean>(false)
 
   const mapStyles = {
     width: "100%",
@@ -86,37 +86,72 @@ export function BeaconMap(props: BeaconMapProps) {
     }
   }
 
-  function onMarkerClick(listener: DetectedBridge, props?: IMarkerProps, marker?: any) {
+  function onMarkerClick(listener: DetectedBridge, marker?: any) {
     setShowingInfoWindow({
       activeMarker: marker,
       listener: listener,
-      selectedPlace: props,
       showingInfoWindow: true,
-    });
+    })
   }
 
+  function onTableClick(d: DetectedBridge) {
+    setInfoVisible(!infoVisible)
+  }
+
+  function getMarker(d: DetectedBridge, idx: number): Marker | null {
+    // if this bridge is not in the filters (-1), show it
+    if (filters.bridges.indexOf(d.listenerName) === -1) {
+      //@ts-ignore
+      return (
+        <Marker
+          //@ts-ignore google map magig
+          title={`Bridge: ${d.listenerName}`}
+          position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
+          label={`${d.listenerName}
+            ${d.numberOfBeacons}`}
+          onClick={(_, marker) => onMarkerClick(d, marker)}
+          id={`markerNo${idx}`}
+        >
+          <InfoWindow
+            visible={infoVisible}
+            google={props.google}
+            map={null}
+            marker={null}
+          >
+            <div>
+              <p> test </p>
+            </div>
+          </InfoWindow>
+        </Marker>
+      )
+    }
+    return null
+  }
+
+  //<InfoWindow
+  //google={props.google}
+  //map={null}
+  //marker={showingInfoWindow?.activeMarker}
+  //// TODO: make this the proper information
+  //visible={showingInfoWindow?.showingInfoWindow}>
+  //<div>
+  //<p className="font-bold text-lg">Bridge: {showingInfoWindow?.listener?.listenerName}</p>
+  //<p className="text-base">Coordinates: {showingInfoWindow?.listener?.coordinates}</p>
+  //<p className="text-base">Number of beacons: {showingInfoWindow?.listener?.numberOfBeacons}</p>
+  //</div>
+  //</InfoWindow>
   return (
     <>
       <Map
         google={props.google}
         style={mapStyles}
+        // TODO: initialCenter based off of current location?
         initialCenter={{ lat: 38.912378, lng: -104.819766 }}
         onReady={(_, map) => mapLoaded(map)}
         onClick={onMapClicked}
       >
-        {detectedBridges.map((d: DetectedBridge) => {
-          // if this bridge is not in the filters (-1), show it
-          if (filters.bridges.indexOf(d.listenerName) === -1) {
-            return (
-              <Marker
-                //@ts-ignore google map magic
-                title={`Bridge: ${d.listenerName}`}
-                position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
-                label={d.listenerName}
-                onClick={(props, marker) => onMarkerClick(d, props, marker)}
-              />
-            )
-          }
+        {detectedBridges.map((d: DetectedBridge, idx: number) => {
+          return getMarker(d, idx)
         })}
         {detectedBridges.map((d: DetectedBridge) => {
           // if this bridge is not in the filters (-1), show it
@@ -127,14 +162,13 @@ export function BeaconMap(props: BeaconMapProps) {
               const theta: number = ((14 * Math.PI / 9) / numBeacons) * idx + Math.PI / 3
               const x: number = radius * Math.sin(theta)
               const y: number = radius * Math.cos(theta)
-              console.log(x, y)
               return (
                 <Circle
                   radius={50}
                   center={{ lat: d.coordinates[0] + y, lng: d.coordinates[1] + x }}
-                  onMouseover={() => console.log('mouseover')}
-                  onClick={() => console.log('click')}
-                  onMouseout={() => console.log('mouseout')}
+                  //onMouseover={() => console.log('mouseover')}
+                  //onClick={() => console.log('click')}
+                  //onMouseout={() => console.log('mouseout')}
                   strokeColor='transparent'
                   strokeOpacity={0}
                   strokeWeight={5}
@@ -146,17 +180,6 @@ export function BeaconMap(props: BeaconMapProps) {
             )
           }
         })}
-        <InfoWindow
-          google={props.google}
-          map={null}
-          marker={showingInfoWindow?.activeMarker}
-          visible={showingInfoWindow?.showingInfoWindow}>
-          <div>
-            <p className="font-bold text-lg">Bridge: {showingInfoWindow?.listener?.listenerName}</p>
-            <p className="text-base">Coordinates: {showingInfoWindow?.listener?.coordinates}</p>
-            <p className="text-base">Number of beacons: {showingInfoWindow?.listener?.numberOfBeacons}</p>
-          </div>
-        </InfoWindow>
       </Map>
       <SideBar
         bridges={detectedBridges}
@@ -165,6 +188,7 @@ export function BeaconMap(props: BeaconMapProps) {
         filters={filters}
         setFilters={setFilters}
         setSettings={props.setSettings}
+        onTableClick={onTableClick}
       />
     </>
   );
