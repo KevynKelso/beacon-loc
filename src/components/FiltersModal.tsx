@@ -41,9 +41,10 @@ export default function FiltersModal(props: ModalProps) {
         <Form.Text className="text-muted">
           Unchecking an item will remove it from view on the sidebar and map.
         </Form.Text>
-        {props.availableItems.map((element: string) => {
+        {props.availableItems.map((element: string, idx: number) => {
           return (
             <Form.Check
+              key={idx}
               className="mt-2"
               defaultChecked={props.existingFilters.indexOf(element) === -1 ? true : false}
               label={element}

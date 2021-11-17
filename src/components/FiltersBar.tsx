@@ -19,16 +19,16 @@ interface FiltersBarProps {
 }
 
 export default function FiltersBar(props: FiltersBarProps) {
-  const [showFilterBeaconsModal, setShowFilterBeaconsModal] = useState(false)
+  //const [showFilterBeaconsModal, setShowFilterBeaconsModal] = useState(false)
   const [showFilterBridgesModal, setShowFilterBridgesModal] = useState(false)
 
-  const filterBeaconsTitle: string = "Filter beacons"
+  //const filterBeaconsTitle: string = "Filter beacons"
   const filterBridgesTitle: string = "Filter bridges"
 
-  function openFilterBeaconsModal(e: React.MouseEvent): void {
-    e.preventDefault()
-    setShowFilterBeaconsModal(true)
-  }
+  //function openFilterBeaconsModal(e: React.MouseEvent): void {
+  //e.preventDefault()
+  //setShowFilterBeaconsModal(true)
+  //}
 
   function openFilterBridgesModal(e: React.MouseEvent): void {
     e.preventDefault()
@@ -37,7 +37,7 @@ export default function FiltersBar(props: FiltersBarProps) {
 
   return (
     <div className="flex mt-3">
-      {
+      {/*{
         props.availableBeacons?.length ?
           <>
             <Button
@@ -57,11 +57,12 @@ export default function FiltersBar(props: FiltersBarProps) {
           </>
           : null
       }
+        */}
       {props.availableBridges?.length ?
         <>
           <Button
             onClick={(e) => openFilterBridgesModal(e)}
-            className='ml-2'
+            //className='ml-2'
             variant="primary"
           >
             {filterBridgesTitle}

@@ -1,6 +1,6 @@
-import React, { useState } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 
-import { Map, GoogleApiWrapper, GoogleAPI, Marker, IMarkerProps, InfoWindow, Circle } from 'google-maps-react'
+import { Map, GoogleApiWrapper, GoogleAPI, Marker, Circle } from 'google-maps-react'
 
 import Environment from '../environment.config'
 import SideBar from './SideBar'
@@ -8,6 +8,7 @@ import mapStyle from '../resources/mapStyles.json'
 import { Filters } from './FiltersBar'
 import { ISettings } from './SettingsModal'
 import { PublishedDevice } from './MqttListener'
+import markerIcon from "./markerIcon"
 
 
 export interface DetectedBridge {
@@ -17,180 +18,149 @@ export interface DetectedBridge {
   beaconIdentifiers?: string[]
 }
 
-interface showInfoWindow {
-  activeMarker: Marker | null
-  listener?: DetectedBridge
-  showingInfoWindow: boolean
-}
-
 interface BeaconMapProps {
   className?: string
-  devices: PublishedDevice[]
+  //devices: PublishedDevice[]
+  detectedBridges: DetectedBridge[]
+  //detectedDevicesSum: number
   google: GoogleAPI
   setSettings: (settings: ISettings) => void
 }
 
+interface MapCoords {
+  lat: number
+  lng: number
+}
+
 
 export function BeaconMap(props: BeaconMapProps) {
-  const [showingInfoWindow, setShowingInfoWindow] = useState<showInfoWindow>()
   // if it's in the filters, we want to ignore it
   const [filters, setFilters] = useState<Filters>({ beacons: [], bridges: [] })
-  const [infoVisible, setInfoVisible] = useState<boolean>(false)
+  const [mapCenter, setMapCenter] = useState<MapCoords>({ lat: 38.912378, lng: -104.819766 })
 
   const mapStyles = {
     width: "100%",
     height: "100%",
   }
 
-  let detectedBridges: DetectedBridge[] = []
-  let detectedDevicesSum: number = 0
+  //let detectedDevicesSum: number = 0
 
-  // filter out only unique names to add to detected bridges
-  props.devices.forEach((device: PublishedDevice) => {
-    // determine if this device is in detectedBridges
-    const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName == device.listenerName);
-    if (i <= -1) {
-      // it is not, so make a new bridge entry
-      return detectedBridges.push(
-        {
-          listenerName: device.listenerName,
-          numberOfBeacons: 1,
-          coordinates: device.listenerCoordinates,
-          // TODO: possibly convert the mac address to a useful name for the beacon here
-          beaconIdentifiers: [device.beaconMac],
-        });
-    }
-    // already in there, update the information for this device
-    detectedBridges[i].beaconIdentifiers?.push(device.beaconMac)
-    detectedBridges[i].numberOfBeacons++
-    detectedDevicesSum++
-  });
+  //function setDetectedBridges(devices: PublishedDevice[]): DetectedBridge[] {
+  //let detectedBridges: DetectedBridge[] = []
+  //// filter out only unique names to add to detected bridges
+  //devices.forEach((device: PublishedDevice) => {
+  //// determine if this device is in detectedBridges
+  //const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName == device.listenerName);
+  //if (i <= -1) {
+  //// it is not, so make a new bridge entry
+  //return detectedBridges.push(
+  //{
+  //listenerName: device.listenerName,
+  //numberOfBeacons: 1,
+  //coordinates: device.listenerCoordinates,
+  //// TODO: possibly convert the mac address to a useful name for the beacon here
+  //beaconIdentifiers: [device.beaconMac],
+  //});
+  //}
+  //// already in there, update the information for this device
+  //detectedBridges[i].beaconIdentifiers?.push(device.beaconMac)
+  //detectedBridges[i].numberOfBeacons++
+  //detectedDevicesSum++
+  //})
 
-  // sorted by name
-  detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
-  detectedDevicesSum += detectedBridges.length
+  //// sorted by name
+  //detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
 
-  //@ts-ignore the google map type is weird
-  function mapLoaded(map) {
+  //return detectedBridges
+  //}
+
+  //let detectedBridges: DetectedBridge[] = setDetectedBridges(props.devices)
+  //detectedDevicesSum += detectedBridges.length
+
+  function mapLoaded(map: any) {
     map.setOptions({
       styles: mapStyle
     })
   }
 
-  function onMapClicked() {
-    if (showingInfoWindow) {
-      setShowingInfoWindow({
-        showingInfoWindow: false,
-        activeMarker: null
-      })
-    }
+  function onTableClick(d: DetectedBridge) {
+    setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
   }
 
-  function onMarkerClick(listener: DetectedBridge, marker?: any) {
-    setShowingInfoWindow({
-      activeMarker: marker,
-      listener: listener,
-      showingInfoWindow: true,
+  function renderBridgeMarkers(bridges: DetectedBridge[]) {
+    return bridges.map((d: DetectedBridge, idx: number) => {
+      // if this bridge is not in the filters (-1), show it, otherwise, don't
+      if (filters.bridges.indexOf(d.listenerName) === -1) {
+        //@ts-ignore
+        return (
+          <Marker
+            //@ts-ignore google map magig
+            title={`Bridge: ${d.listenerName}`}
+            key={`${d.listenerName}${idx}`}
+            position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
+            //onClick={(_, marker) => onMarkerClick(d, marker)}
+            icon={markerIcon(d.listenerName, d.numberOfBeacons)}
+          />
+        )
+      }
+      return null
     })
   }
 
-  function onTableClick(d: DetectedBridge) {
-    setInfoVisible(!infoVisible)
+  function renderBeaconMarkers(bridges: DetectedBridge[]) {
+    return bridges.map((d: DetectedBridge) => {
+      // if this bridge is not in the filters (-1), show it, otherwise, don't
+      if (filters.bridges.indexOf(d.listenerName) === -1 && d.beaconIdentifiers) {
+        return d.beaconIdentifiers.map((_: string, idx: number) => {
+          const numBeacons: number = d.beaconIdentifiers?.length || 1
+          const radius: number = numBeacons * 0.00015
+          //const theta: number = ((14 * Math.PI / 9) / numBeacons) * idx + Math.PI / 3
+          const theta: number = (Math.PI * 2) / numBeacons * idx
+          const x: number = radius * Math.sin(theta)
+          const y: number = radius * Math.cos(theta) - 0.001
+          return (
+            <Circle
+              radius={50}
+              center={{ lat: d.coordinates[0] + y, lng: d.coordinates[1] + x }}
+              strokeColor='transparent'
+              strokeOpacity={0}
+              strokeWeight={5}
+              fillColor='#39FF14'
+              fillOpacity={0.9}
+            >
+            </Circle>
+          )
+        }
+        )
+      }
+      return null
+    })
   }
 
-  function getMarker(d: DetectedBridge, idx: number): Marker | null {
-    // if this bridge is not in the filters (-1), show it
-    if (filters.bridges.indexOf(d.listenerName) === -1) {
-      //@ts-ignore
-      return (
-        <Marker
-          //@ts-ignore google map magig
-          title={`Bridge: ${d.listenerName}`}
-          position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
-          label={`${d.listenerName}
-            ${d.numberOfBeacons}`}
-          onClick={(_, marker) => onMarkerClick(d, marker)}
-          id={`markerNo${idx}`}
-        >
-          <InfoWindow
-            visible={infoVisible}
-            google={props.google}
-            map={null}
-            marker={null}
-          >
-            <div>
-              <p> test </p>
-            </div>
-          </InfoWindow>
-        </Marker>
-      )
-    }
-    return null
-  }
-
-  //<InfoWindow
-  //google={props.google}
-  //map={null}
-  //marker={showingInfoWindow?.activeMarker}
-  //// TODO: make this the proper information
-  //visible={showingInfoWindow?.showingInfoWindow}>
-  //<div>
-  //<p className="font-bold text-lg">Bridge: {showingInfoWindow?.listener?.listenerName}</p>
-  //<p className="text-base">Coordinates: {showingInfoWindow?.listener?.coordinates}</p>
-  //<p className="text-base">Number of beacons: {showingInfoWindow?.listener?.numberOfBeacons}</p>
-  //</div>
-  //</InfoWindow>
   return (
-    <>
+    <div id="map-container">
       <Map
         google={props.google}
         style={mapStyles}
-        // TODO: initialCenter based off of current location?
         initialCenter={{ lat: 38.912378, lng: -104.819766 }}
+        center={mapCenter}
         onReady={(_, map) => mapLoaded(map)}
-        onClick={onMapClicked}
+      //onClick={onMapClicked}
       >
-        {detectedBridges.map((d: DetectedBridge, idx: number) => {
-          return getMarker(d, idx)
-        })}
-        {detectedBridges.map((d: DetectedBridge) => {
-          // if this bridge is not in the filters (-1), show it
-          if (filters.bridges.indexOf(d.listenerName) === -1 && d.beaconIdentifiers) {
-            return d.beaconIdentifiers.map((identifier: string, idx: number) => {
-              const numBeacons: number = d.beaconIdentifiers?.length || 1
-              const radius: number = numBeacons * 0.0002
-              const theta: number = ((14 * Math.PI / 9) / numBeacons) * idx + Math.PI / 3
-              const x: number = radius * Math.sin(theta)
-              const y: number = radius * Math.cos(theta)
-              return (
-                <Circle
-                  radius={50}
-                  center={{ lat: d.coordinates[0] + y, lng: d.coordinates[1] + x }}
-                  //onMouseover={() => console.log('mouseover')}
-                  //onClick={() => console.log('click')}
-                  //onMouseout={() => console.log('mouseout')}
-                  strokeColor='transparent'
-                  strokeOpacity={0}
-                  strokeWeight={5}
-                  fillColor='#39FF14'
-                  fillOpacity={0.9}
-                />
-              )
-            }
-            )
-          }
-        })}
-      </Map>
+        {renderBridgeMarkers(props.detectedBridges)}
+        {/*{renderBeaconMarkers(detectedBridges)}*/}
+      </Map >
+
       <SideBar
-        bridges={detectedBridges}
+        bridges={props.detectedBridges}
         className="max-w-1/3"
-        detectedDevicesSum={detectedDevicesSum}
+        //detectedDevicesSum={props.detectedDevicesSum}
         filters={filters}
         setFilters={setFilters}
         setSettings={props.setSettings}
         onTableClick={onTableClick}
       />
-    </>
+    </div>
   );
 }
 

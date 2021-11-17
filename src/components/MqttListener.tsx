@@ -1,13 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSubscription } from 'mqtt-react-hooks'
 
-import BeaconMap from './BeaconMap'
-import Button from 'react-bootstrap/Button'
-import Navbar from './Navbar'
-import SideBar from './SideBar'
+import BeaconMap, { DetectedBridge } from './BeaconMap'
 import { ISettings, DefaultSettings } from './SettingsModal'
-
-import Table from 'react-bootstrap/Table'
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -30,10 +25,9 @@ function getCurrentTimestamp(): number {
 
 export default function MqttListener() {
   const { message } = useSubscription('test');
-  const [numberOfReceivedMessages, setNumberOfReceivedMessages] = useState<number>(0)
+  //const [numberOfReceivedMessages, setNumberOfReceivedMessages] = useState<number>(0)
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
-  const [showTable, setShowTable] = useState<boolean>(false)
 
   function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
     const message = JSON.parse(JSONMessage)
@@ -62,9 +56,11 @@ export default function MqttListener() {
   }
 
   function pushDevicesUpdate(device: PublishedDevice, newDevice: boolean, index?: number): void {
+    let devices: PublishedDevice[] = publishedDevices
+
     if (newDevice) {
-      publishedDevices.push(device)
-      setPublishedDevices(publishedDevices)
+      devices.push(device)
+      setPublishedDevices(devices)
       return
     }
 
@@ -73,8 +69,8 @@ export default function MqttListener() {
       return
     }
 
-    publishedDevices[index] = device
-    setPublishedDevices(publishedDevices)
+    devices[index] = device
+    setPublishedDevices(devices)
   }
 
   // main logic for incomming messages
@@ -82,7 +78,7 @@ export default function MqttListener() {
     if (!message?.message || typeof message.message != "string") return
     const receivedMessage: PublishedDevice | undefined = validateMqttMessage(message.message)
     if (!receivedMessage) return
-    setNumberOfReceivedMessages(numberOfReceivedMessages + 1)
+    //setNumberOfReceivedMessages(numberOfReceivedMessages + 1)
 
     // check if beaconMac is in publishedDevices
     if (!publishedDevices.some((e: MqttBridgePublish) => e.beaconMac === receivedMessage.beaconMac)) {
@@ -121,9 +117,42 @@ export default function MqttListener() {
     setPublishedDevices(publishedDevices)
   }, [message])
 
+  //let detectedDevicesSum: number = 0
+
+  function setDetectedBridges(devices: PublishedDevice[]): DetectedBridge[] {
+    let detectedBridges: DetectedBridge[] = []
+    // filter out only unique names to add to detected bridges
+    devices.forEach((device: PublishedDevice) => {
+      // determine if this device is in detectedBridges
+      const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName == device.listenerName);
+      if (i <= -1) {
+        // it is not, so make a new bridge entry
+        return detectedBridges.push(
+          {
+            listenerName: device.listenerName,
+            numberOfBeacons: 1,
+            coordinates: device.listenerCoordinates,
+            // TODO: possibly convert the mac address to a useful name for the beacon here
+            beaconIdentifiers: [device.beaconMac],
+          });
+      }
+      // already in there, update the information for this device
+      detectedBridges[i].beaconIdentifiers?.push(device.beaconMac)
+      detectedBridges[i].numberOfBeacons++
+      //detectedDevicesSum++
+    })
+
+    // sorted by name
+    detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
+
+    return detectedBridges
+  }
+
+  //let detectedBridges: DetectedBridge[] = setDetectedBridges(props.devices)
+  //detectedDevicesSum += detectedBridges.length
+
+
   return (
-    <div>
-      <BeaconMap setSettings={setSettings} devices={publishedDevices} />
-    </div>
+    <BeaconMap setSettings={setSettings} detectedBridges={setDetectedBridges(publishedDevices)} />
   );
 }

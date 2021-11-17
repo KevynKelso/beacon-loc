@@ -99,7 +99,7 @@ export default function SettingsModal(props: SettingsModalProps) {
             <Form.Label>Local timeout: {localTimeout} seconds</Form.Label>
             <Form.Control type="number" onChange={onChangeLocalTimeout} />
             <Form.Text className="text-muted">
-              Time required to forget information if a bridge stops publishing and another bridge is seeing the same beacon
+              Time required to transfer beacon ownership if a bridge stops publishing and another bridge is seeing the same beacon
             </Form.Text>
           </Form.Group>
 

@@ -10,7 +10,7 @@ import { ISettings } from './SettingsModal'
 
 interface SideBarProps {
   className?: string
-  detectedDevicesSum: number
+  detectedDevicesSum?: number
   bridges: DetectedBridge[]
   setSettings: (settings: ISettings) => void
   filters: Filters
@@ -57,13 +57,16 @@ export default function SideBar(props: SideBarProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {props.bridges.map((d: DetectedBridge) => {
+                    {props.bridges.map((d: DetectedBridge, idx: number) => {
                       // if this bridge is not in the filters (-1), show it
                       const truncatedName: string = d.listenerName.substring(0, 15)
                       if (props.filters.bridges.indexOf(d.listenerName) === -1) {
                         return (
                           // TODO: when row is clicked, display additional information
-                          <tr onClick={() => props.onTableClick(d)}>
+                          <tr
+                            onClick={() => props.onTableClick(d)}
+                            key={idx}
+                          >
                             <td className="underline text-blue-500">
                               {truncatedName}
                             </td>
@@ -74,7 +77,10 @@ export default function SideBar(props: SideBarProps) {
                     })}
                   </tbody>
                 </Table>
-                <p>Total devices found: {props.detectedDevicesSum}</p>
+                {
+                  props.detectedDevicesSum ? <p>Total devices found: {props.detectedDevicesSum}</p>
+                    : null
+                }
               </div>
               : <p>No bridges publishing</p>
             }
