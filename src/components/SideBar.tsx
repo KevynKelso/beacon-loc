@@ -7,6 +7,7 @@ import FiltersBar, { Filters, BridgeOrBeacon } from './FiltersBar'
 import NavBar from './Navbar'
 import { DetectedBridge } from './BeaconMap'
 import { ISettings } from './SettingsModal'
+import SideBarTableElement from './SideBarTableElement'
 
 interface SideBarProps {
   className?: string
@@ -59,19 +60,13 @@ export default function SideBar(props: SideBarProps) {
                   <tbody>
                     {props.bridges.map((d: DetectedBridge, idx: number) => {
                       // if this bridge is not in the filters (-1), show it
-                      const truncatedName: string = d.listenerName.substring(0, 15)
                       if (props.filters.bridges.indexOf(d.listenerName) === -1) {
                         return (
-                          // TODO: when row is clicked, display additional information
-                          <tr
+                          <SideBarTableElement
+                            bridge={d}
+                            idx={idx}
                             onClick={() => props.onTableClick(d)}
-                            key={idx}
-                          >
-                            <td className="underline text-blue-500">
-                              {truncatedName}
-                            </td>
-                            <td>{d.numberOfBeacons}</td>
-                          </tr>
+                          />
                         )
                       }
                     })}

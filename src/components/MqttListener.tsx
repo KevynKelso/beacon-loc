@@ -130,15 +130,13 @@ export default function MqttListener() {
         return detectedBridges.push(
           {
             listenerName: device.listenerName,
-            numberOfBeacons: 1,
             coordinates: device.listenerCoordinates,
             // TODO: possibly convert the mac address to a useful name for the beacon here
-            beaconIdentifiers: [device.beaconMac],
+            beacons: [{ identifier: device.beaconMac, timestamp: device.seenTimestamp }],
           });
       }
       // already in there, update the information for this device
-      detectedBridges[i].beaconIdentifiers?.push(device.beaconMac)
-      detectedBridges[i].numberOfBeacons++
+      detectedBridges[i].beacons?.push({ identifier: device.beaconMac, timestamp: device.seenTimestamp })
       //detectedDevicesSum++
     })
 

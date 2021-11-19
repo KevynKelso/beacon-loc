@@ -1,4 +1,4 @@
-export default function markerIcon(name: string, numBeacons: number) {
+export default function markerIcon(name: string, numBeacons: number, active: boolean) {
   const characterWidth = 6
   const digitWidth = 12
 
@@ -9,13 +9,15 @@ export default function markerIcon(name: string, numBeacons: number) {
   const nameBoxWidth: number = truncatedName.length * characterWidth + 25
 
   const totalWidth = nameBoxWidth + numberBoxWidth
+
+  const fillColor: string = active ? "0, 217, 255" : "255, 255, 255"
   return {
     url: `data:image/svg+xml;utf8,
       <svg width="${totalWidth}" height="30" xmlns="http://www.w3.org/2000/svg">
 
        <g>
         <title>Layer 1</title>
-        <rect id="svg_3" height="288" width="695.99999" style="fill:rgb(255,255,255)"/>
+        <rect id="svg_3" height="288" width="695.99999" style="fill:rgb(${fillColor})"/>
         <line stroke-width="3" id="svg_4" y2="420" x2="546" y1="130" x1="545" />
         <text transform="matrix(1.62776 0 0 1.71429 -349.964 -106.571)" xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="24" stroke-width="0" id="svg_5" y="174" x="575" >Beacons:</text>
         <text transform="matrix(6.75494 0 0 4.1085 -3628.6 -829.088)" xml:space="preserve" text-anchor="start" font-family="Noto Sans JP" font-size="24" id="svg_6" y="279.53356" x="629.0311" stroke-width="0" >0</text>
