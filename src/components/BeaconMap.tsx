@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState } from "react"
 
 import { Map, GoogleApiWrapper, GoogleAPI, Marker, Circle } from 'google-maps-react'
 
@@ -87,8 +87,11 @@ export function BeaconMap(props: BeaconMapProps) {
   }
 
   function onTableClick(d: DetectedBridge) {
+    const activeMarkerToSet: number = props.detectedBridges.indexOf(d)
+    if (activeMarker === activeMarkerToSet) return
+
     setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
-    setActiveMarker(props.detectedBridges.indexOf(d))
+    setActiveMarker(activeMarkerToSet)
   }
 
   function renderBridgeMarkers(bridges: DetectedBridge[]) {
@@ -162,7 +165,6 @@ export function BeaconMap(props: BeaconMapProps) {
 
       <SideBar
         bridges={props.detectedBridges}
-        className="max-w-1/3"
         //detectedDevicesSum={props.detectedDevicesSum}
         filters={filters}
         setFilters={setFilters}

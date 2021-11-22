@@ -50,28 +50,30 @@ export default function SideBar(props: SideBarProps) {
             <h3>Detected bridges</h3>
             {props.bridges.length > 0 ?
               <div>
-                <Table striped borderless hover className='whitespace-nowrap max-w-1/3'>
-                  <thead>
-                    <tr>
-                      <th>Bridge</th>
-                      <th>Devices</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {props.bridges.map((d: DetectedBridge, idx: number) => {
-                      // if this bridge is not in the filters (-1), show it
-                      if (props.filters.bridges.indexOf(d.listenerName) === -1) {
-                        return (
-                          <SideBarTableElement
-                            bridge={d}
-                            idx={idx}
-                            onClick={() => props.onTableClick(d)}
-                          />
-                        )
-                      }
-                    })}
-                  </tbody>
-                </Table>
+                <div className="max-h-96 overflow-y-scroll">
+                  <Table striped borderless hover className='whitespace-nowrap max-w-1/3'>
+                    <thead>
+                      <tr>
+                        <th>Bridge</th>
+                        <th>Devices</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {props.bridges.map((d: DetectedBridge, idx: number) => {
+                        // if this bridge is not in the filters (-1), show it
+                        if (props.filters.bridges.indexOf(d.listenerName) === -1) {
+                          return (
+                            <SideBarTableElement
+                              bridge={d}
+                              idx={idx}
+                              onClick={() => props.onTableClick(d)}
+                            />
+                          )
+                        }
+                      })}
+                    </tbody>
+                  </Table>
+                </div>
                 {
                   props.detectedDevicesSum ? <p>Total devices found: {props.detectedDevicesSum}</p>
                     : null

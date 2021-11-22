@@ -1,6 +1,10 @@
+import { useState } from 'react'
+
+import Button from 'react-bootstrap/Button'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Popover from 'react-bootstrap/Popover'
 import Table from 'react-bootstrap/Table'
+import Tooltip from 'react-bootstrap/Tooltip'
 
 import { DetectedBridge, Beacon } from "./BeaconMap"
 
@@ -11,6 +15,8 @@ interface SideBarTableElementProps {
 }
 
 export default function SideBarTableElement(props: SideBarTableElementProps) {
+  const [copied, setCopied] = useState<boolean>(false)
+
   const truncatedName: string = props.bridge.listenerName.substring(0, 15)
 
   function formatTimestamp(ts: number): string {
@@ -30,6 +36,11 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
     return `${year}-${month}-${day} ${hour}:${min}:${sec}`
   }
 
+  function onCopyButtonClick() {
+    navigator.clipboard.writeText(`${props.bridge.coordinates[0]},${props.bridge.coordinates[1]}`)
+    setCopied(true)
+  }
+
   return (
     <OverlayTrigger
       trigger="click"
@@ -37,33 +48,51 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
       rootClose={true}
       overlay={
         <Popover>
-          <Popover.Header as="h3"><strong>Bridge:</strong> {props.bridge.listenerName}</Popover.Header>
+          <Popover.Header>
+            <h6><strong>Bridge:</strong> {props.bridge.listenerName}</h6>
+          </Popover.Header>
           <Popover.Body>
             <p className="font-bold">Devices: {props.bridge.beacons?.length || 0}</p>
-            <Table striped borderless hover>
-              <thead>
-                <tr>
-                  <th>Serial number</th>
-                  <th>Last seen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {props.bridge.beacons?.map((beacon: Beacon) =>
-                (
-                  <tr key={`${props.bridge.listenerName}-${beacon.identifier}`}>
-                    <td>{beacon.identifier}</td>
-                    <td>{formatTimestamp(beacon.timestamp)}</td>
+            <div className="max-h-96 overflow-y-scroll">
+              <Table striped borderless hover>
+                <thead className="sticky top-0 bg-white">
+                  <tr>
+                    <th>Serial number</th>
+                    <th>Last seen</th>
                   </tr>
-                )
-                )}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {props.bridge.beacons?.map((beacon: Beacon) =>
+                  (
+                    <tr key={`${props.bridge.listenerName}-${beacon.identifier}`}>
+                      <td>{beacon.identifier}</td>
+                      <td>{formatTimestamp(beacon.timestamp)}</td>
+                    </tr>
+                  )
+                  )}
+                </tbody>
+              </Table>
+            </div>
             <p className="font-bold">Coordinates:</p>
             <p>Lat: {props.bridge.coordinates[0]}</p>
             <p>Lng: {props.bridge.coordinates[1]}</p>
-            <p onClick={() => navigator.clipboard.writeText(`${props.bridge.coordinates[0]},${props.bridge.coordinates[1]}`)}>
-              <i className="far fa-clipboard"></i>
-              test </p>
+            <OverlayTrigger
+              placement="right"
+              overlay={
+                <Tooltip>
+                  {copied ? "Copied!" : "Copy to clipboard"}
+                </Tooltip>
+              }
+            >
+              <Button
+                variant="outline-dark"
+                onClick={onCopyButtonClick}
+                onMouseEnter={() => setCopied(false)}
+                size="sm"
+              >
+                Copy
+              </Button>
+            </OverlayTrigger>
           </Popover.Body>
         </Popover>
       }

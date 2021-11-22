@@ -6,7 +6,7 @@ import time
 import paho.mqtt.client as mqtt
 
 NUM_MESSAGES = 100
-NUM_LISTENERS = 5
+NUM_LISTENERS = 20
 MAX_DIST = 0.02
 TIME_BETWEEN_MSG = 0.2
 
