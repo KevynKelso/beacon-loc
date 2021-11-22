@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 
 import { Map, GoogleApiWrapper, GoogleAPI, Marker, Circle } from 'google-maps-react'
 
@@ -23,7 +23,8 @@ export interface Beacon {
 
 interface BeaconMapProps {
   className?: string
-  detectedBridges: DetectedBridge[]
+  //detectedBridges: DetectedBridge[]
+  getDetectedBridges: () => DetectedBridge[]
   //detectedDevicesSum: number
   google: GoogleAPI
   setSettings: (settings: ISettings) => void
@@ -41,44 +42,24 @@ export function BeaconMap(props: BeaconMapProps) {
   const [mapCenter, setMapCenter] = useState<MapCoords>({ lat: 38.912378, lng: -104.819766 })
   const [activeMarker, setActiveMarker] = useState<number>(-1)
 
+  const [detectedBridges, setDetectedBridges] = useState<DetectedBridge[]>([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newBridges = props.getDetectedBridges()
+      if (newBridges == detectedBridges) return
+
+      setDetectedBridges(newBridges)
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   const mapStyles = {
     width: "100%",
     height: "100%",
   }
-
-  //let detectedDevicesSum: number = 0
-
-  //function setDetectedBridges(devices: PublishedDevice[]): DetectedBridge[] {
-  //let detectedBridges: DetectedBridge[] = []
-  //// filter out only unique names to add to detected bridges
-  //devices.forEach((device: PublishedDevice) => {
-  //// determine if this device is in detectedBridges
-  //const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName == device.listenerName);
-  //if (i <= -1) {
-  //// it is not, so make a new bridge entry
-  //return detectedBridges.push(
-  //{
-  //listenerName: device.listenerName,
-  //numberOfBeacons: 1,
-  //coordinates: device.listenerCoordinates,
-  //// TODO: possibly convert the mac address to a useful name for the beacon here
-  //beaconIdentifiers: [device.beaconMac],
-  //});
-  //}
-  //// already in there, update the information for this device
-  //detectedBridges[i].beaconIdentifiers?.push(device.beaconMac)
-  //detectedBridges[i].numberOfBeacons++
-  //detectedDevicesSum++
-  //})
-
-  //// sorted by name
-  //detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
-
-  //return detectedBridges
-  //}
-
-  //let detectedBridges: DetectedBridge[] = setDetectedBridges(props.devices)
-  //detectedDevicesSum += detectedBridges.length
 
   function mapLoaded(map: any) {
     map.setOptions({
@@ -87,7 +68,7 @@ export function BeaconMap(props: BeaconMapProps) {
   }
 
   function onTableClick(d: DetectedBridge) {
-    const activeMarkerToSet: number = props.detectedBridges.indexOf(d)
+    const activeMarkerToSet: number = detectedBridges.indexOf(d)
     if (activeMarker === activeMarkerToSet) return
 
     setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
@@ -98,7 +79,6 @@ export function BeaconMap(props: BeaconMapProps) {
     return bridges.map((d: DetectedBridge, idx: number) => {
       // if this bridge is not in the filters (-1), show it, otherwise, don't
       if (filters.bridges.indexOf(d.listenerName) === -1) {
-        //@ts-ignore
         return (
           <Marker
             //@ts-ignore google map magig
@@ -149,7 +129,8 @@ export function BeaconMap(props: BeaconMapProps) {
     })
   }
 
-  return (
+  return useCallback(
+    //@ts-ignore
     <div id="map-container">
       <Map
         google={props.google}
@@ -157,25 +138,24 @@ export function BeaconMap(props: BeaconMapProps) {
         initialCenter={{ lat: 38.912378, lng: -104.819766 }}
         center={mapCenter}
         onReady={(_, map) => mapLoaded(map)}
-      //onClick={onMapClicked}
       >
-        {renderBridgeMarkers(props.detectedBridges)}
-        {renderBeaconMarkers(props.detectedBridges)}
+        {renderBridgeMarkers(detectedBridges)}
+        {/*{renderBeaconMarkers(props.detectedBridges)}*/}
       </Map >
 
       <SideBar
-        bridges={props.detectedBridges}
+        bridges={detectedBridges}
         //detectedDevicesSum={props.detectedDevicesSum}
         filters={filters}
         setFilters={setFilters}
         setSettings={props.setSettings}
         onTableClick={onTableClick}
       />
-    </div>
-  );
+    </div>, [detectedBridges])
 }
 
 export default GoogleApiWrapper({
   //apiKey: Environment().googleMapsApiKey || '',
   apiKey: '',
+  //@ts-ignore
 })(BeaconMap);

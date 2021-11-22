@@ -46,7 +46,7 @@ export default function MqttListener() {
     const publishMessage: PublishedDevice = {
       beaconMac: message.beaconMac,
       listenerCoordinates: message.listenerCoordinates,
-      listenerName: message.listenerName,
+      listenerName: message.listenerName.toString(),
       rssi: message.rssi,
       seenTimestamp: message.timestamp,
       timestamp: message.timestamp,
@@ -59,8 +59,7 @@ export default function MqttListener() {
     let devices: PublishedDevice[] = publishedDevices
 
     if (newDevice) {
-      devices.push(device)
-      setPublishedDevices(devices)
+      setPublishedDevices([...devices, device])
       return
     }
 
@@ -149,8 +148,13 @@ export default function MqttListener() {
   //let detectedBridges: DetectedBridge[] = setDetectedBridges(props.devices)
   //detectedDevicesSum += detectedBridges.length
 
+  //<BeaconMap
+  //setSettings={setSettings}
+  ////detectedBridges={setDetectedBridges(publishedDevices)}
+  //getDetectedBridges={() => setDetectedBridges(publishedDevices)}
+  ///>
 
   return (
-    <BeaconMap setSettings={setSettings} detectedBridges={setDetectedBridges(publishedDevices)} />
-  );
+    <TestBeaconMap />
+  )
 }
