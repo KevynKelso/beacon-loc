@@ -41,13 +41,15 @@ export default function SettingsModal(props: SettingsModalProps) {
 
   function onChangeLocalTimeout(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault()
-    const value: number = parseInt(e.target.value, 10)
+    let value: number = parseInt(e.target.value, 10)
+    if (value < 0) value = DefaultSettings.localTimeout
     setLocalTimeout(value || DefaultSettings.localTimeout)
   }
 
   function onChangeGlobalTimeout(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault()
-    const value: number = parseInt(e.target.value, 10) * 60
+    let value: number = parseInt(e.target.value, 10) * 60
+    if (value < 0) value = DefaultSettings.globalTimeout
     setGlobalTimeout(value || DefaultSettings.globalTimeout)
   }
 

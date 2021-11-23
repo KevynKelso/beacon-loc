@@ -29,7 +29,7 @@ const BeaconMap = compose(
   withProps({
     googleMapURL: `https://maps.googleapis.com/maps/api/js?key=${key}&v=3.exp`,
     loadingElement: <div />,
-    containerElement: <div style={{ height: `400px` }} />,
+    containerElement: <div />,
     mapElement: <div className="static" />,
   }),
   withScriptjs,
