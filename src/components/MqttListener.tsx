@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSubscription } from 'mqtt-react-hooks'
 
-import BeaconMap, { DetectedBridge } from './BeaconMap'
 import { ISettings, DefaultSettings } from './SettingsModal'
-import TestBeaconMap from './TestBeaconMap'
+import BeaconMap, { DetectedBridge } from './BeaconMap'
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -125,13 +124,13 @@ export default function MqttListener() {
     devices.forEach((device: PublishedDevice) => {
       // determine if this device is in detectedBridges
       const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName == device.listenerName);
+      // TODO: possibly convert the mac address to a useful name for the beacon here
       if (i <= -1) {
         // it is not, so make a new bridge entry
         return detectedBridges.push(
           {
             listenerName: device.listenerName,
             coordinates: device.listenerCoordinates,
-            // TODO: possibly convert the mac address to a useful name for the beacon here
             beacons: [{ identifier: device.beaconMac, timestamp: device.seenTimestamp }],
           });
       }
@@ -141,7 +140,7 @@ export default function MqttListener() {
     })
 
     // sorted by name
-    detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
+    //detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
 
     return detectedBridges
   }
@@ -156,6 +155,10 @@ export default function MqttListener() {
   ///>
 
   return (
-    <TestBeaconMap detectedBridges={setDetectedBridges(publishedDevices)} />
+    <BeaconMap
+      //@ts-ignore
+      detectedBridges={setDetectedBridges(publishedDevices)}
+      setSettings={setSettings}
+    />
   )
 }

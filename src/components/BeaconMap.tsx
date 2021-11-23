@@ -1,14 +1,11 @@
-import { useState, useCallback, useEffect } from "react"
-
-import { Map, GoogleApiWrapper, GoogleAPI, Marker, Circle } from 'google-maps-react'
-
-import Environment from '../environment.config'
-import SideBar from './SideBar'
+import { useState } from 'react'
+import { compose, withProps } from "recompose"
+import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
 import mapStyle from '../resources/mapStyles.json'
 import { Filters } from './FiltersBar'
-import { ISettings } from './SettingsModal'
 import markerIcon from "./markerIcon"
-
+import SideBar from './SideBar'
+import Environment from '../environment.config'
 
 export interface DetectedBridge {
   coordinates: number[]
@@ -21,49 +18,49 @@ export interface Beacon {
   timestamp: number
 }
 
-interface BeaconMapProps {
-  className?: string
-  //detectedBridges: DetectedBridge[]
-  getDetectedBridges: () => DetectedBridge[]
-  //detectedDevicesSum: number
-  google: GoogleAPI
-  setSettings: (settings: ISettings) => void
-}
-
 interface MapCoords {
   lat: number
   lng: number
 }
+//const key: string = Environment().googleMapsApiKey
+const key: string = ""
 
-
-export function BeaconMap(props: BeaconMapProps) {
-  // if it's in the filters, we want to ignore it
+const BeaconMap = compose(
+  withProps({
+    googleMapURL: `https://maps.googleapis.com/maps/api/js?key=${key}&v=3.exp`,
+    loadingElement: <div />,
+    containerElement: <div style={{ height: `400px` }} />,
+    mapElement: <div className="static" />,
+  }),
+  withScriptjs,
+  withGoogleMap
+)((props: any) => {
   const [filters, setFilters] = useState<Filters>({ beacons: [], bridges: [] })
   const [mapCenter, setMapCenter] = useState<MapCoords>({ lat: 38.912378, lng: -104.819766 })
   const [activeMarker, setActiveMarker] = useState<number>(-1)
 
-  const [detectedBridges, setDetectedBridges] = useState<DetectedBridge[]>([]);
+  const detectedBridges: DetectedBridge[] = props.detectedBridges
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newBridges = props.getDetectedBridges()
-      if (newBridges == detectedBridges) return
-
-      setDetectedBridges(newBridges)
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  const mapStyles = {
-    width: "100%",
-    height: "100%",
+  function onMarkerClick(index: number, bridge: DetectedBridge) {
+    setActiveMarker(index)
   }
 
-  function mapLoaded(map: any) {
-    map.setOptions({
-      styles: mapStyle
+  function renderBridgeMarkers(bridges: DetectedBridge[]) {
+    return bridges.map((d: DetectedBridge, idx: number) => {
+      // if this bridge is not in the filters (-1), show it, otherwise, don't
+      if (filters.bridges.indexOf(d.listenerName) === -1) {
+        return (
+          <Marker
+            title={`Bridge: ${d.listenerName}`}
+            key={`${d.listenerName}${idx}`}
+            position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
+            //onClick={(_, marker) => onMarkerClick(d, marker)}
+            icon={markerIcon(d.listenerName, d.beacons?.length || 0, activeMarker === idx)}
+            onClick={() => onMarkerClick(idx, d)}
+          />
+        )
+      }
+      return null
     })
   }
 
@@ -75,73 +72,23 @@ export function BeaconMap(props: BeaconMapProps) {
     setActiveMarker(activeMarkerToSet)
   }
 
-  function renderBridgeMarkers(bridges: DetectedBridge[]) {
-    return bridges.map((d: DetectedBridge, idx: number) => {
-      // if this bridge is not in the filters (-1), show it, otherwise, don't
-      if (filters.bridges.indexOf(d.listenerName) === -1) {
-        return (
-          <Marker
-            //@ts-ignore google map magig
-            title={`Bridge: ${d.listenerName}`}
-            key={`${d.listenerName}${idx}`}
-            position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
-            //onClick={(_, marker) => onMarkerClick(d, marker)}
-            icon={markerIcon(d.listenerName, d.beacons?.length || 0, activeMarker === idx)}
-          />
-        )
-      }
-      return null
-    })
+  function onMapClick() {
+    setActiveMarker(-1)
   }
 
-  function renderBeaconMarkers(bridges: DetectedBridge[]) {
-    return bridges.map((d: DetectedBridge, i: number) => {
-      // if this bridge is not in the filters (-1), show it, otherwise, don't
-      if (filters.bridges.indexOf(d.listenerName) === -1 && d.beacons && activeMarker === i) {
-        return d.beacons.map((_: Beacon, idx: number) => {
-          const numColumns = Math.ceil(Math.sqrt(d.beacons?.length || 0))
-
-          //const numBeacons: number = d.beacons?.length || 1
-          //const radius: number = numBeacons * 0.00015
-          //const theta: number = (Math.PI * 2) / numBeacons * idx
-          //const x: number = radius * Math.sin(theta)
-          //const y: number = radius * Math.cos(theta) - 0.001
-          const x: number = (idx % numColumns) * 0.0012
-          const y: number = Math.floor(idx / numColumns) * 0.0012
-
-          const offsetx = 0.01
-          return (
-            <Circle
-              radius={50}
-              center={{ lat: d.coordinates[0] + y, lng: d.coordinates[1] + x + offsetx }}
-              strokeColor='transparent'
-              strokeOpacity={0}
-              strokeWeight={5}
-              fillColor='#00d9ff'
-              fillOpacity={0.9}
-            >
-            </Circle>
-          )
-        }
-        )
-      }
-      return null
-    })
-  }
-
-  return useCallback(
-    //@ts-ignore
-    <div id="map-container">
-      <Map
-        google={props.google}
-        style={mapStyles}
-        initialCenter={{ lat: 38.912378, lng: -104.819766 }}
+  return (
+    <>
+      <GoogleMap
+        defaultCenter={{ lat: 38.912378, lng: -104.819766 }}
+        defaultZoom={14}
+        //key={new Date().getTime()}
         center={mapCenter}
-        onReady={(_, map) => mapLoaded(map)}
+        //onReady={(_, map) => mapLoaded(map)}
+        options={{ styles: mapStyle }}
+        onClick={onMapClick}
       >
         {renderBridgeMarkers(detectedBridges)}
-        {/*{renderBeaconMarkers(props.detectedBridges)}*/}
-      </Map >
+      </GoogleMap>
 
       <SideBar
         bridges={detectedBridges}
@@ -151,11 +98,10 @@ export function BeaconMap(props: BeaconMapProps) {
         setSettings={props.setSettings}
         onTableClick={onTableClick}
       />
-    </div>, [detectedBridges])
+    </>
+  )
 }
+)
 
-export default GoogleApiWrapper({
-  //apiKey: Environment().googleMapsApiKey || '',
-  apiKey: '',
-  //@ts-ignore
-})(BeaconMap);
+export default BeaconMap
+

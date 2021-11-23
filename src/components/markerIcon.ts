@@ -1,3 +1,9 @@
+export const medSpringGreen: string = "113, 247, 159"
+export const medTurquoise: string = "61, 214, 208"
+export const keppel: string = "21, 176, 151"
+export const cafeNoir: string = "81, 60, 44"
+export const bistre: string = "40, 25, 14"
+
 export default function markerIcon(name: string, numBeacons: number, active: boolean) {
   const characterWidth = 6
   const digitWidth = 12
@@ -10,7 +16,7 @@ export default function markerIcon(name: string, numBeacons: number, active: boo
 
   const totalWidth = nameBoxWidth + numberBoxWidth
 
-  const fillColor: string = active ? "0, 217, 255" : "255, 255, 255"
+  const fillColor: string = active ? medTurquoise : keppel
   return {
     url: `data:image/svg+xml;utf8,
       <svg width="${totalWidth}" height="30" xmlns="http://www.w3.org/2000/svg">

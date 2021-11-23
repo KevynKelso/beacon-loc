@@ -63,6 +63,7 @@ export default function SideBar(props: SideBarProps) {
                         if (props.filters.bridges.indexOf(d.listenerName) === -1) {
                           return (
                             <SideBarTableElement
+                              key={`sidebartable-${idx}`}
                               bridge={d}
                               idx={idx}
                               onClick={() => props.onTableClick(d)}
