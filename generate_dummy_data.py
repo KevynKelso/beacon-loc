@@ -7,9 +7,9 @@ import time
 import paho.mqtt.client as mqtt
 
 NUM_MESSAGES = 100
-NUM_LISTENERS = 100
+NUM_LISTENERS = 10
 MAX_DIST = 0.02
-TIME_BETWEEN_MSG = 0.2
+TIME_BETWEEN_MSG = 0.01
 HOME_LAT = 38.912387
 HOME_LON = -104.819766
 
@@ -105,16 +105,15 @@ def main():
     for i in range(0, NUM_LISTENERS):
         lat = HOME_LAT + (i // num_cols) * 0.005
         lon = HOME_LON + (i % num_cols) * 0.020
-        ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         name = get_random_element_from_list(listener_names, len(listener_names), names)
         names.append(name)
-        mac = i + 1
-        rssi = int(random.uniform(-25, -100))
-
-        client.publish(
-            "test", json.dumps(create_publish_data(lat, lon, ts, name, mac, rssi))
-        )
-        time.sleep(TIME_BETWEEN_MSG)
+        for j in range(0, int(random.uniform(2, 10))):
+            ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            mac = f"{i+1}-{j + 1}"
+            rssi = int(random.uniform(-25, -100))
+            data = create_publish_data(lat, lon, ts, name, mac, rssi)
+            client.publish("test", json.dumps(data))
+            time.sleep(TIME_BETWEEN_MSG)
 
 
 if __name__ == "__main__":

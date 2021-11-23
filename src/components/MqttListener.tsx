@@ -3,6 +3,7 @@ import { useSubscription } from 'mqtt-react-hooks'
 
 import BeaconMap, { DetectedBridge } from './BeaconMap'
 import { ISettings, DefaultSettings } from './SettingsModal'
+import TestBeaconMap from './TestBeaconMap'
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -155,6 +156,6 @@ export default function MqttListener() {
   ///>
 
   return (
-    <TestBeaconMap />
+    <TestBeaconMap detectedBridges={setDetectedBridges(publishedDevices)} />
   )
 }

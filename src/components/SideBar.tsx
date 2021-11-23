@@ -32,7 +32,6 @@ export default function SideBar(props: SideBarProps) {
     }
   }
 
-  // TODO: add scrolling
   return (
     <div className={props.className} >
       <div className={showBridges ? "shadow-md absolute bg-gray-100" : "absolute"}>
