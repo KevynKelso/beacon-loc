@@ -9,6 +9,7 @@ import Tooltip from 'react-bootstrap/Tooltip'
 import { DetectedBridge, Beacon } from "./BeaconMap"
 
 interface SideBarTableElementProps {
+  activeMarker: number
   bridge: DetectedBridge
   idx: number
   onClick: () => void
@@ -18,6 +19,7 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
   const [copied, setCopied] = useState<boolean>(false)
 
   const truncatedName: string = props.bridge.listenerName.substring(0, 15)
+  const rowClasses: string = props.idx % 2 ? "text-white" : "bg-warm-black text-white"
 
   function formatTimestamp(ts: number): string {
     if (ts.toString().length !== 14) {
@@ -46,14 +48,15 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
       trigger="click"
       placement={"right"}
       rootClose={true}
+      show={props.idx === props.activeMarker}
       overlay={
         <Popover>
           <Popover.Header>
-            <h6><strong>Bridge:</strong> {props.bridge.listenerName}</h6>
+            <h6 className="mb-0"><strong>Bridge:</strong> {props.bridge.listenerName}</h6>
           </Popover.Header>
           <Popover.Body>
             <p className="font-bold">Devices: {props.bridge.beacons?.length || 0}</p>
-            <div className="max-h-96 overflow-y-scroll">
+            <div className="max-h-96 overflow-y-scroll" onScroll={(e) => console.log(e)}>
               <Table striped borderless hover>
                 <thead className="sticky top-0 bg-white">
                   <tr>
@@ -98,15 +101,20 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
       }
     >
       <tr
-        key={`sidebartableelement-${props.idx}`}
         onClick={props.onClick}
+        key={`sidebartableelement-${props.idx}`}
+        className={props.activeMarker === props.idx ? "bg-dark-sky-blue" : rowClasses}
       >
-        <td className="underline text-blue-500">
+        <td
+          className={props.activeMarker === props.idx ? "text-gray-100" : "underline text-blue-400"}
+        >
           {truncatedName}
         </td>
-        <td>{props.bridge.beacons?.length || 0}</td>
+        <td
+          className={props.activeMarker === props.idx ? "text-gray-100" : "text-white"}
+        >
+          {props.bridge.beacons?.length || 0}</td>
       </tr>
     </OverlayTrigger>
-
-  );
+  )
 }

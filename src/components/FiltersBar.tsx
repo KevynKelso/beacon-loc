@@ -69,7 +69,7 @@ export default function FiltersBar(props: FiltersBarProps) {
           </Button>
           <FiltersModal
             availableItems={props.availableBridges}
-            existingFilters={props.existingFilters.bridges}
+            //existingFilters={props.existingFilters.bridges}
             setFilters={(elements: string[]) => props.updateFilters('BRIDGE', elements)}
             setShow={setShowFilterBridgesModal}
             show={showFilterBridgesModal}

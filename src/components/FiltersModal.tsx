@@ -6,7 +6,6 @@ import Button from 'react-bootstrap/Button'
 
 interface ModalProps {
   availableItems: string[]
-  existingFilters: string[]
   setFilters: (filters: string[]) => void
   setShow: (show: boolean) => void
   show: boolean
@@ -14,22 +13,37 @@ interface ModalProps {
 }
 
 export default function FiltersModal(props: ModalProps) {
+  const [unchecked, setUnchecked] = useState<string[]>([])
+  const [selectAll, setSelectAll] = useState<boolean>(true)
+
   // if it's in the filters, we remove it
   // otherwise, add it
   function onClickCheck(element: string) {
-    const idx: number = props.existingFilters.indexOf(element)
-    // in the filters array, need to remove it
-    if (idx > -1) {
-      props.existingFilters.splice(idx, 1)
-      return props.setFilters(props.existingFilters)
+    if (unchecked.indexOf(element) === -1) {
+      setUnchecked([...unchecked, element])
+      return props.setFilters([...unchecked, element])
     }
 
-    // not in the filters array, need to add it
-    return props.setFilters([...props.existingFilters, element])
+    const newFilters: string[] = unchecked.filter((e: string) => e !== element)
+    setUnchecked(newFilters)
+
+    return props.setFilters(newFilters)
   }
 
   function onSubmitFilters() {
     props.setShow(false)
+  }
+
+  function onClickCheckAll() {
+    setSelectAll(!selectAll)
+
+    if (selectAll) {
+      setUnchecked(props.availableItems)
+      return props.setFilters(props.availableItems)
+    }
+
+    setUnchecked([])
+    return props.setFilters([])
   }
 
   return (
@@ -41,19 +55,28 @@ export default function FiltersModal(props: ModalProps) {
         <Form.Text className="text-muted">
           Unchecking an item will remove it from view on the sidebar and map.
         </Form.Text>
-        {props.availableItems.map((element: string, idx: number) => {
-          return (
-            <Form.Check
-              key={idx}
-              className="mt-2"
-              defaultChecked={props.existingFilters.indexOf(element) === -1 ? true : false}
-              label={element}
-              onClick={() => onClickCheck(element)}
-              type="checkbox"
-            />
-          )
-        })
-        }
+        <div className="flex flex-col max-h-96 overflow-scroll">
+          <Form.Check
+            className="place-self-center mt-2"
+            checked={selectAll}
+            label="Uncheck all"
+            onClick={() => onClickCheckAll()}
+            type="checkbox"
+          />
+          {props.availableItems.map((element: string, idx: number) => {
+            return (
+              <Form.Check
+                checked={!(unchecked.indexOf(element) !== -1)}
+                className="mt-2"
+                key={idx}
+                label={element}
+                onClick={() => onClickCheck(element)}
+                type="checkbox"
+              />
+            )
+          })
+          }
+        </div>
         <div className="grid mt-5">
           <Button
             className="justify-self-end"

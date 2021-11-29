@@ -10,13 +10,14 @@ import { ISettings } from './SettingsModal'
 import SideBarTableElement from './SideBarTableElement'
 
 interface SideBarProps {
+  activeMarker: number
+  bridges: DetectedBridge[]
   className?: string
   detectedDevicesSum?: number
-  bridges: DetectedBridge[]
-  setSettings: (settings: ISettings) => void
   filters: Filters
-  setFilters: (filters: Filters) => void
   onTableClick: (d: DetectedBridge) => void
+  setFilters: (filters: Filters) => void
+  setSettings: (settings: ISettings) => void
 }
 
 export default function SideBar(props: SideBarProps) {
@@ -34,7 +35,7 @@ export default function SideBar(props: SideBarProps) {
 
   return (
     <div className={props.className} >
-      <div className={showBridges ? "shadow-md absolute bg-gray-100" : "absolute"}>
+      <div className={showBridges ? "shadow-md absolute bg-prussian-blue" : "absolute"}>
         <div className="flex m-3">
           <Button
             onClick={() => setShowBridges(!showBridges)}
@@ -46,12 +47,12 @@ export default function SideBar(props: SideBarProps) {
         </div>
         {showBridges &&
           <div className="m-3">
-            <h3>Detected bridges</h3>
+            <h3 className="text-white">Detected bridges</h3>
             {props.bridges.length > 0 ?
               <div>
                 <div className="max-h-96 overflow-y-scroll">
                   <Table striped borderless hover className='whitespace-nowrap max-w-1/3'>
-                    <thead>
+                    <thead className="sticky top-0 bg-prussian-blue text-white">
                       <tr>
                         <th>Bridge</th>
                         <th>Devices</th>
@@ -63,9 +64,10 @@ export default function SideBar(props: SideBarProps) {
                         if (props.filters.bridges.indexOf(d.listenerName) === -1) {
                           return (
                             <SideBarTableElement
-                              key={`sidebartable-${idx}`}
+                              activeMarker={props.activeMarker}
                               bridge={d}
                               idx={idx}
+                              key={`sidebartable-${idx}`}
                               onClick={() => props.onTableClick(d)}
                             />
                           )
