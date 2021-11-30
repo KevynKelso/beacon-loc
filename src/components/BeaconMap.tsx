@@ -40,9 +40,10 @@ const BeaconMap = compose(
   const [mapCenter, setMapCenter] = useState<MapCoords>({ lat: 38.912378, lng: -104.819766 })
   const [activeMarker, setActiveMarker] = useState<number>(-1)
 
-  let detectedBridges: DetectedBridge[] = props.detectedBridges
-
   function onMarkerClick(index: number, bridge: DetectedBridge) {
+    if (index === activeMarker) {
+      return setActiveMarker(-1)
+    }
     setActiveMarker(index)
   }
 
@@ -64,7 +65,7 @@ const BeaconMap = compose(
   }
 
   function onTableClick(d: DetectedBridge) {
-    const activeMarkerToSet: number = detectedBridges.indexOf(d)
+    const activeMarkerToSet: number = props.detectedBridges.indexOf(d)
     if (activeMarker === activeMarkerToSet) {
       setActiveMarker(-1)
       return
@@ -87,11 +88,11 @@ const BeaconMap = compose(
         options={{ styles: mapStyle }}
         onClick={onMapClick}
       >
-        {renderBridgeMarkers(detectedBridges)}
+        {renderBridgeMarkers(props.detectedBridges)}
       </GoogleMap>
 
       <SideBar
-        bridges={detectedBridges}
+        bridges={props.detectedBridges}
         filters={filters}
         setFilters={setFilters}
         setSettings={props.setSettings}

@@ -81,7 +81,7 @@ export default function SideBar(props: SideBarProps) {
                     : null
                 }
               </div>
-              : <p>No bridges publishing</p>
+              : <p className="text-white">No bridges publishing</p>
             }
             <FiltersBar
               availableBeacons={["test", "tes"]}

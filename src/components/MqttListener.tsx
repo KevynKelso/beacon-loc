@@ -139,20 +139,12 @@ export default function MqttListener() {
       //detectedDevicesSum++
     })
 
+    // TODO: potentially sort this stuff
     // sorted by name
     //detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
 
     return detectedBridges
   }
-
-  //let detectedBridges: DetectedBridge[] = setDetectedBridges(props.devices)
-  //detectedDevicesSum += detectedBridges.length
-
-  //<BeaconMap
-  //setSettings={setSettings}
-  ////detectedBridges={setDetectedBridges(publishedDevices)}
-  //getDetectedBridges={() => setDetectedBridges(publishedDevices)}
-  ///>
 
   return (
     <BeaconMap

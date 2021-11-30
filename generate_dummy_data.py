@@ -8,6 +8,7 @@ import paho.mqtt.client as mqtt
 
 NUM_MESSAGES = 100
 NUM_LISTENERS = 100
+NUM_BEACONS = 5
 MAX_DIST = 0.02
 TIME_BETWEEN_MSG = 0.07
 HOME_LAT = 38.912387
@@ -62,23 +63,6 @@ def generate_random_dummy_data(listener_names) -> dict:
     return create_publish_data(lat, lon, ts, name, mac, rssi)
 
 
-# def publish_beacon_is_definately_at_listener_B(client):
-# lat, lon = random_coords_close_to_home()
-# ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-# name = listener_names[0]
-# mac = get_random_mac()
-# rssi = -80
-# data1 = create_publish_data(lat, lon, ts, name, mac, rssi)
-
-# client.publish("test", json.dumps(data1))
-# time.sleep(5)
-# name = listener_names[1]
-# rssi = -20
-# data2 = create_publish_data(lat, lon, ts, name, mac, rssi)
-
-# client.publish("test", json.dumps(data2))
-
-
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
@@ -89,9 +73,33 @@ def on_message(client, userdata, msg):
     print(msg.topic + " " + str(msg.payload))
 
 
+# beacons move between 2 listeners
+def test_case_1(client):
+    print("Running test 1")
+    # need 2 listeners, A & B
+    latA = HOME_LAT
+    lngA = HOME_LON
+    latB = HOME_LAT
+    lngB = HOME_LON + 0.006
+    for i in range(0, NUM_BEACONS):
+        # A
+        ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        rssi = -10
+        data = create_publish_data(latA, lngA, ts, "A", f"beacon-{i}", rssi)
+        client.publish("test", json.dumps(data))
+        time.sleep(1)
+    for i in range(0, NUM_BEACONS):
+        # B
+        rssi = -10
+        ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        data = create_publish_data(latB, lngB, ts, "B", f"beacon-{i}", rssi)
+        client.publish("test", json.dumps(data))
+        time.sleep(1)
+
+
 def main():
-    with open("scientists.txt", "r") as f:
-        listener_names = f.readlines()
+    # with open("scientists.txt", "r") as f:
+    # listener_names = f.readlines()
 
     client = mqtt.Client()
     client.on_connect = on_connect
@@ -100,23 +108,24 @@ def main():
     client.connect("localhost", 1883, 60)
     client.subscribe("test")
 
-    names = []
-    for i in range(0, NUM_LISTENERS):
-        name = get_random_element_from_list(listener_names, len(listener_names), names)
-        names.append(name)
+    test_case_1(client)
+    # names = []
+    # for i in range(0, NUM_LISTENERS):
+    # name = get_random_element_from_list(listener_names, len(listener_names), names)
+    # names.append(name)
 
-    num_cols = math.ceil(math.sqrt(NUM_LISTENERS))
-    for k in range(0, 2):
-        for i, name in enumerate(names):
-            lat = HOME_LAT + (i // num_cols) * 0.005
-            lon = HOME_LON + (i % num_cols) * 0.020
-            for j in range(0, int(random.uniform(2, 10))):
-                ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                mac = f"{i+1}-{j + 1}"
-                rssi = int(random.uniform(-25, -100))
-                data = create_publish_data(lat, lon, ts, name, mac, rssi)
-                client.publish("test", json.dumps(data))
-                time.sleep(TIME_BETWEEN_MSG)
+    # num_cols = math.ceil(math.sqrt(NUM_LISTENERS))
+    # for k in range(0, 2):
+    # for i, name in enumerate(names):
+    # lat = HOME_LAT + (i // num_cols) * 0.005
+    # lon = HOME_LON + (i % num_cols) * 0.020
+    # for j in range(0, int(random.uniform(2, 10))):
+    # ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    # mac = f"{i+1}-{j + 1}"
+    # rssi = int(random.uniform(-25, -100))
+    # data = create_publish_data(lat, lon, ts, name, mac, rssi)
+    # client.publish("test", json.dumps(data))
+    # time.sleep(TIME_BETWEEN_MSG)
 
 
 if __name__ == "__main__":
