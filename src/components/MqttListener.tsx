@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useSubscription } from 'mqtt-react-hooks'
 
 import { ISettings, DefaultSettings } from './SettingsModal'
-import BeaconMap, { DetectedBridge } from './BeaconMap'
+import BeaconMap from './BeaconMap'
+import { getCurrentTimestamp } from "../utils/timestamp"
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -16,17 +17,24 @@ export interface PublishedDevice extends MqttBridgePublish {
   seenTimestamp: number
 }
 
-function getCurrentTimestamp(): number {
-  const d: number = Date.now()
-  const date = new Date(d)
+export interface DetectedBridge {
+  coordinates: number[]
+  listenerName: string // this must be unique for each detected bridge
+  beacons?: Beacon[]
+}
 
-  return parseInt(`${String(date.getFullYear()).padStart(4, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`)
+export interface Beacon {
+  beaconMac: string
+  timestamp: number
+  coordinates: number[]
 }
 
 export default function MqttListener() {
   const { message } = useSubscription('test');
-  //const [numberOfReceivedMessages, setNumberOfReceivedMessages] = useState<number>(0)
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
+  const [bridges, setBridges] = useState<DetectedBridge[]>([])
+  //console.log(publishedDevices)
+
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
 
   function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
@@ -60,6 +68,7 @@ export default function MqttListener() {
 
     if (newDevice) {
       setPublishedDevices([...devices, device])
+      setBridges(convertDevicesToBridges([...devices, device]))
       return
     }
 
@@ -70,14 +79,37 @@ export default function MqttListener() {
 
     devices[index] = device
     setPublishedDevices(devices)
+    setBridges(convertDevicesToBridges(devices))
   }
 
   // main logic for incomming messages
   useEffect(() => {
+    // logic for rejecting bad messages
     if (!message?.message || typeof message.message != "string") return
     const receivedMessage: PublishedDevice | undefined = validateMqttMessage(message.message)
     if (!receivedMessage) return
-    //setNumberOfReceivedMessages(numberOfReceivedMessages + 1)
+
+    // have we seen this bridge before?
+    const seenBridge: DetectedBridge | undefined = bridges.find((e: DetectedBridge) => e.listenerName === receivedMessage.listenerName)
+    if (seenBridge) {
+      // has this bridge's location changed significantly in comparison to the beacons he's seen before?
+      seenBridge.beacons?.forEach((b: Beacon) => {
+        // TODO: add significant location change to the settings
+        const significantLocationChange: number = 0.01 // this is approximately 1km
+        const deltaLat: number = b.coordinates[0] - seenBridge.coordinates[0]
+        const deltaLng: number = b.coordinates[1] - seenBridge.coordinates[1]
+        const distanceChanged = Math.sqrt(Math.pow(deltaLat, 2) + Math.pow(deltaLng, 2))
+
+        // TODO: this is 1 cycle behind
+        if (distanceChanged > significantLocationChange) {
+          const newListenerName: string = `${receivedMessage.timestamp}`
+          const index: number = publishedDevices.map(e => e.beaconMac).indexOf(b.beaconMac)
+          let newDevice: PublishedDevice = publishedDevices[index]
+          newDevice.listenerName = newListenerName
+          pushDevicesUpdate(newDevice, false, index)
+        }
+      })
+    }
 
     // check if beaconMac is in publishedDevices
     if (!publishedDevices.some((e: MqttBridgePublish) => e.beaconMac === receivedMessage.beaconMac)) {
@@ -116,14 +148,13 @@ export default function MqttListener() {
     setPublishedDevices(publishedDevices)
   }, [message])
 
-  //let detectedDevicesSum: number = 0
 
-  function setDetectedBridges(devices: PublishedDevice[]): DetectedBridge[] {
+  function convertDevicesToBridges(devices: PublishedDevice[]): DetectedBridge[] {
     let detectedBridges: DetectedBridge[] = []
     // filter out only unique names to add to detected bridges
     devices.forEach((device: PublishedDevice) => {
       // determine if this device is in detectedBridges
-      const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName == device.listenerName);
+      const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName === device.listenerName);
       // TODO: possibly convert the mac address to a useful name for the beacon here
       if (i <= -1) {
         // it is not, so make a new bridge entry
@@ -131,12 +162,31 @@ export default function MqttListener() {
           {
             listenerName: device.listenerName,
             coordinates: device.listenerCoordinates,
-            beacons: [{ identifier: device.beaconMac, timestamp: device.seenTimestamp }],
-          });
+            beacons: [{
+              beaconMac: device.beaconMac,
+              timestamp: device.seenTimestamp,
+              coordinates: device.listenerCoordinates,
+            }],
+          })
       }
-      // already in there, update the information for this device
-      detectedBridges[i].beacons?.push({ identifier: device.beaconMac, timestamp: device.seenTimestamp })
-      //detectedDevicesSum++
+      if (!detectedBridges[i].beacons) return
+
+      // already in there, add this device to the bridge
+      detectedBridges[i].beacons?.push(
+        {
+          beaconMac: device.beaconMac,
+          timestamp: device.seenTimestamp,
+          coordinates: device.listenerCoordinates,
+        })
+
+      // get the most recently seen device's coordinates
+      const mostRecentBeacon: Beacon | undefined = detectedBridges[i].beacons?.reduce(
+        (previousBeacon, currentBeacon) =>
+          previousBeacon.timestamp > currentBeacon.timestamp ? previousBeacon : currentBeacon
+      )
+      if (mostRecentBeacon) {
+        detectedBridges[i].coordinates = mostRecentBeacon.coordinates
+      }
     })
 
     // TODO: potentially sort this stuff
@@ -149,7 +199,7 @@ export default function MqttListener() {
   return (
     <BeaconMap
       //@ts-ignore
-      detectedBridges={setDetectedBridges(publishedDevices)}
+      detectedBridges={bridges}
       setSettings={setSettings}
     />
   )

@@ -5,7 +5,7 @@ import Table from 'react-bootstrap/Table'
 
 import FiltersBar, { Filters, BridgeOrBeacon } from './FiltersBar'
 import NavBar from './Navbar'
-import { DetectedBridge } from './BeaconMap'
+import { DetectedBridge } from './MqttListener'
 import { ISettings } from './SettingsModal'
 import SideBarTableElement from './SideBarTableElement'
 

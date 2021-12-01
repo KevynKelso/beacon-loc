@@ -6,7 +6,8 @@ import Popover from 'react-bootstrap/Popover'
 import Table from 'react-bootstrap/Table'
 import Tooltip from 'react-bootstrap/Tooltip'
 
-import { DetectedBridge, Beacon } from "./BeaconMap"
+import { DetectedBridge, Beacon } from "./MqttListener"
+import { formatTimestamp } from "../utils/timestamp"
 
 interface SideBarTableElementProps {
   activeMarker: number
@@ -20,23 +21,6 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
 
   const truncatedName: string = props.bridge.listenerName.substring(0, 15)
   const rowClasses: string = props.idx % 2 ? "text-white" : "bg-warm-black text-white"
-
-  function formatTimestamp(ts: number): string {
-    if (ts.toString().length !== 14) {
-      console.error("invalid timestamp", ts.toString().length)
-      return "unknown"
-    }
-    // expecting timestamps in the form "20211119145525"
-    // need to separate yyyy-mm-dd-HH-mm-ss
-    const year: string = ts.toString().substring(0, 4)
-    const month: string = ts.toString().substring(4, 6)
-    const day: string = ts.toString().substring(6, 8)
-    const hour: string = ts.toString().substring(8, 10)
-    const min: string = ts.toString().substring(10, 12)
-    const sec: string = ts.toString().substring(12, 14)
-
-    return `${year}-${month}-${day} ${hour}:${min}:${sec}`
-  }
 
   function onCopyButtonClick() {
     navigator.clipboard.writeText(`${props.bridge.coordinates[0]},${props.bridge.coordinates[1]}`)
@@ -67,8 +51,8 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
                 <tbody>
                   {props.bridge.beacons?.map((beacon: Beacon) =>
                   (
-                    <tr key={`${props.bridge.listenerName}-${beacon.identifier}`}>
-                      <td>{beacon.identifier}</td>
+                    <tr key={`${props.bridge.listenerName}-${beacon.beaconMac}`}>
+                      <td>{beacon.beaconMac}</td>
                       <td>{formatTimestamp(beacon.timestamp)}</td>
                     </tr>
                   )

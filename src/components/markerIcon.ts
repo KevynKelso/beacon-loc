@@ -3,6 +3,7 @@ export const steelTeal: string = "80, 137, 145"
 export const prussianBlue: string = "23, 42, 58"
 export const warmBlack: string = "0, 67, 70"
 export const mountainMeadow: string = "9, 188, 138"
+export const lostRed: string = "112, 43, 44"
 
 export default function markerIcon(
   name: string,
@@ -20,7 +21,8 @@ export default function markerIcon(
 
   const totalWidth = nameBoxWidth + numberBoxWidth
 
-  const fillColor: string = active ? darkSkyBlue : prussianBlue
+  const notActiveColor = isNaN(+truncatedName) ? prussianBlue : lostRed
+  const fillColor: string = active ? darkSkyBlue : notActiveColor
   const textColor: string = active ? "5, 5, 5" : "255, 255, 255"
   return {
     url: `data:image/svg+xml;utf8,

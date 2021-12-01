@@ -1,23 +1,17 @@
 import React from 'react'
-import { useState } from 'react'
+
 import { compose, withProps } from "recompose"
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
-import mapStyle from '../resources/mapStyles.json'
-import { Filters } from './FiltersBar'
-import markerIcon from "./markerIcon"
-import SideBar from './SideBar'
+
 import Environment from '../environment.config'
+import SideBar from './SideBar'
+import mapStyle from '../resources/mapStyles.json'
+import markerIcon from "./markerIcon"
 
-export interface DetectedBridge {
-  coordinates: number[]
-  listenerName: string
-  beacons?: Beacon[]
-}
+import { DetectedBridge } from './MqttListener'
+import { Filters } from './FiltersBar'
+import { useState } from 'react'
 
-export interface Beacon {
-  identifier: string
-  timestamp: number
-}
 
 interface MapCoords {
   lat: number
