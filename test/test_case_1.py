@@ -2,6 +2,8 @@ import datetime
 import json
 import time
 
+from config import HOME_LAT, HOME_LON, NUM_BEACONS
+
 from utils import create_publish_data
 
 

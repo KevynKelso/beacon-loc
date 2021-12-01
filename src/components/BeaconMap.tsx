@@ -17,8 +17,8 @@ interface MapCoords {
   lat: number
   lng: number
 }
-//const mapsAPIKey: string = Environment().googleMapsApiKey
-const mapsAPIKey: string = ""
+const mapsAPIKey: string = Environment().googleMapsApiKey
+//const mapsAPIKey: string = ""
 
 const BeaconMap = compose(
   withProps({
@@ -34,7 +34,7 @@ const BeaconMap = compose(
   const [mapCenter, setMapCenter] = useState<MapCoords>({ lat: 38.912378, lng: -104.819766 })
   const [activeMarker, setActiveMarker] = useState<number>(-1)
 
-  function onMarkerClick(index: number, bridge: DetectedBridge) {
+  function onMarkerClick(index: number) {
     if (index === activeMarker) {
       return setActiveMarker(-1)
     }
@@ -50,7 +50,7 @@ const BeaconMap = compose(
           key={`${d.listenerName}${idx}`}
           position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
           icon={markerIcon(d.listenerName, d.beacons?.length || 0, activeMarker === idx)}
-          onClick={() => onMarkerClick(idx, d)}
+          onClick={() => onMarkerClick(idx)}
           visible={visible}
           zIndex={activeMarker === idx ? 100 : undefined}
         />
@@ -99,4 +99,3 @@ const BeaconMap = compose(
 )
 
 export default React.memo(BeaconMap)
-

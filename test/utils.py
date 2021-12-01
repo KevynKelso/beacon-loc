@@ -1,3 +1,4 @@
+import datetime
 import random
 
 from config import MAX_DIST
@@ -39,3 +40,7 @@ def create_publish_data(lat, lon, ts, name, mac, rssi) -> dict:
         "beaconMac": mac,
         "rssi": rssi,
     }
+
+
+def now():
+    return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
