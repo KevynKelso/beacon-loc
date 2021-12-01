@@ -47,7 +47,7 @@ export default function SideBar(props: SideBarProps) {
         </div>
         {showBridges &&
           <div className="m-3">
-            <h3 className="text-white">Detected bridges</h3>
+            <p className="text-white text-2xl">Detected bridges</p>
             {props.bridges.length > 0 ?
               <div>
                 <div className="max-h-96 overflow-y-scroll">

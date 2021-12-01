@@ -61,8 +61,8 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
               </Table>
             </div>
             <p className="font-bold">Coordinates:</p>
-            <p>Lat: {props.bridge.coordinates[0]}</p>
-            <p>Lng: {props.bridge.coordinates[1]}</p>
+            <p className="mt-2">Lat: {props.bridge.coordinates[0]}</p>
+            <p className="mt-2">Lng: {props.bridge.coordinates[1]}</p>
             <OverlayTrigger
               placement="right"
               overlay={
@@ -72,6 +72,7 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
               }
             >
               <Button
+                className="mt-2"
                 variant="outline-dark"
                 onClick={onCopyButtonClick}
                 onMouseEnter={() => setCopied(false)}
