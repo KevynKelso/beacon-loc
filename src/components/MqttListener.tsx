@@ -2,12 +2,10 @@ import { useEffect, useState } from 'react'
 import { useSubscription } from 'mqtt-react-hooks'
 import { useEasybase } from 'easybase-react'
 
-
 import { ISettings, DefaultSettings } from './SettingsModal'
 import BeaconMap from './BeaconMap'
-import { getCurrentTimestamp } from '../utils/timestamp'
-import { validateMqttMessage } from '../utils/mqtt'
-import { convertDevicesToBridges } from '../utils/devices'
+import { validateMqttMessage } from '../utils/validation'
+import { processRawMessage, recalculate } from '../utils/messageProcessing'
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -21,7 +19,8 @@ export interface PublishedDevice extends MqttBridgePublish {
   seenTimestamp: number
 }
 
-export type PublishedDeviceUpdater = (device: PublishedDevice) => void
+export type PublishedDeviceUpdater = (devices: PublishedDevice[]) => void
+export type DetectedBridgeUpdater = (bridges: DetectedBridge[]) => void
 
 export interface DetectedBridge {
   coordinates: number[]
@@ -35,42 +34,32 @@ export interface Beacon {
   coordinates: number[]
 }
 
+// this component is a wrapper for the entire app which handles new mqtt message
+// logic, querying the database, and keeping track of local state (message
+// processing dependent on settings)
 export default function MqttListener() {
   const [bridges, setBridges] = useState<DetectedBridge[]>([])
-  const [easybaseData, setEasybaseData] = useState<number[] | Record<string, any>[]>([])
+  const [previousMessage, setPreviousMessage] = useState<string>("")
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
 
-  const { db } = useEasybase()
+  const { db, e } = useEasybase()
   const { message } = useSubscription('test');
 
-  function pushDevicesUpdate(device: PublishedDevice, newDevice: boolean, index?: number): void {
-    let devices: PublishedDevice[] = publishedDevices
-
-    if (newDevice) {
-      setPublishedDevices([...devices, device])
-      setBridges(convertDevicesToBridges([...devices, device]))
-      return
-    }
-
-    if (index === undefined) {
-      console.error("Must pass an index")
-      return
-    }
-
-    devices[index] = device
-    setPublishedDevices(devices)
-    setBridges(convertDevicesToBridges(devices))
+  const fetchRecords = async (since: number) => {
+    return await db("RAW MQTT")
+      .return()
+      .where(e.gt("ts", since))
+      .all() as Record<string, any>[]
   }
 
-  const fetchRecords = async () => {
-    const ebData: number[] | Record<string, any>[] = await db("RAW MQTT").return().limit(10).all();
-    setEasybaseData(ebData);
-  }
+  useEffect(() => {
+    if (settings === DefaultSettings) return
 
-  //useEffect(() => {
-  //fetchRecords();
-  //}, [])
+    console.log("fetch records since", settings.sinceTime)
+    fetchRecords(settings.sinceTime).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
+    console.log(publishedDevices)
+  }, [settings])
 
   async function insertToDb(message: PublishedDevice) {
     try {
@@ -87,90 +76,25 @@ export default function MqttListener() {
     }
   }
 
-  function isTooFarAway(lostDistance: number, a: PublishedDevice, b: PublishedDevice) {
-    const deltaLat: number = a.listenerCoordinates[0] - b.listenerCoordinates[0]
-    const deltaLng: number = a.listenerCoordinates[1] - b.listenerCoordinates[1]
-    const distanceChanged = Math.sqrt(Math.pow(deltaLat, 2) + Math.pow(deltaLng, 2))
-
-    return distanceChanged > lostDistance
-  }
-
-  // groups beacons into a new listener group if they are too far away from the inDevice
-  function separateDevicesTooFarAway(inDevice: PublishedDevice) {
-    // find all the published devices associated w/ this received message listener
-    const bridgeDevices: PublishedDevice[] | undefined =
-      publishedDevices.filter(
-        (e: PublishedDevice) => e.listenerName === inDevice.listenerName
-      )
-
-    if (bridgeDevices?.length) {
-      bridgeDevices.forEach((d: PublishedDevice) => {
-        if (isTooFarAway(settings.lostDistance, d, inDevice)) {
-          // this beacon is too far away from the listener and must be associated with it's
-          // own location
-          const newListenerName: string = `${inDevice.timestamp}`
-          const index: number = publishedDevices.map(e => e.beaconMac).indexOf(d.beaconMac)
-          let newDevice: PublishedDevice = publishedDevices[index]
-          newDevice.listenerName = newListenerName
-          pushDevicesUpdate(newDevice, false, index)
-        }
-      })
-    }
-  }
-
-  function processRawMessage(message: PublishedDevice, updater: PublishedDeviceUpdater) {
-  }
-
-  // main logic for incomming messages
+  // logic for incomming messages:
+  // Put each message into the database, then process it with (processRawMessage's)
+  // logic. If settings are changed or old data needs to be pulled down from
+  // the database, local state needs to be cleared and all messages must be
+  // processed again.
   useEffect(() => {
-    // ideally, we put each received message into the database in order of time recieved,
-    // then all this logic gets ran for each message since a certain time every time a setting changes.
-    // That way we can re-run the logic for different settings. Everytime a new message comes in though,
-    // we will still have to run this logic?
-    //
-    // reject bad messages
-    if (!message?.message || typeof message.message != "string") return
+    // reject bad messages, or the if the component just refreshed, don't do anything
+    if (!message?.message || typeof message.message != "string" || message.message === previousMessage) return
+    setPreviousMessage(message.message)
+
     const receivedMessage: PublishedDevice | undefined = validateMqttMessage(message.message)
     if (!receivedMessage) return
-    //insertToDb(receivedMessage)
 
-    separateDevicesTooFarAway(receivedMessage)
+    insertToDb(receivedMessage)
 
-    // check if beaconMac is in publishedDevices
-    if (!publishedDevices.some((e: MqttBridgePublish) => e.beaconMac === receivedMessage.beaconMac)) {
-      return pushDevicesUpdate(receivedMessage, true)
-    }
-
-    // from this point on, beacon is in publishedDevices already (we've seen it
-    // before)
-    const index: number = publishedDevices.map(e => e.beaconMac).indexOf(receivedMessage.beaconMac)
-
-    // it is definitely at this listener if this is the case
-    if (receivedMessage.rssi >= settings.definitivelyHereRSSI) {
-      return pushDevicesUpdate(receivedMessage, false, index)
-    }
-
-    const publishedDevice: PublishedDevice = publishedDevices[index]
-
-    // receive an update from the same device we've seen before
-    if (receivedMessage.listenerName === publishedDevice.listenerName) {
-      return pushDevicesUpdate(receivedMessage, false, index)
-    }
-
-    // larger rssi's take priority
-    if (receivedMessage.rssi > publishedDevice.rssi) {
-      return pushDevicesUpdate(receivedMessage, false, index)
-    }
-
-    // check if it's too old of information, if it is, we update with new info
-    const currentTime: number = getCurrentTimestamp()
-    if (publishedDevice.timestamp + settings.localTimeout < currentTime) {
-      return pushDevicesUpdate(receivedMessage, false, index)
-    }
-
-    // we see the beacon, but it is not here
-    publishedDevices[index].seenTimestamp = receivedMessage.timestamp
-    setPublishedDevices(publishedDevices)
+    processRawMessage(
+      publishedDevices, receivedMessage, settings,
+      setBridges, setPublishedDevices
+    )
   }, [message])
 
   return (

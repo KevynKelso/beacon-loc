@@ -1,3 +1,4 @@
+// generates timestamp in the form of "yyyymmddHHMMss" e.g. "20211119145525"
 export function getCurrentTimestamp(): number {
   const d: number = Date.now()
   const date = new Date(d)
@@ -6,6 +7,7 @@ export function getCurrentTimestamp(): number {
 }
 
 export function formatTimestamp(ts: number): string {
+  if (ts === 0) return "The big bang"
   if (ts.toString().length !== 14) {
     console.error("invalid timestamp", ts.toString().length)
     return "unknown"
@@ -22,3 +24,18 @@ export function formatTimestamp(ts: number): string {
   return `${year}-${month}-${day} ${hour}:${min}:${sec}`
 }
 
+export function replaceDateInTs(date: string, ts: number): number {
+  date = date.replaceAll('-', '')
+  const tsString: string = ts.toString()
+  const newTs: string = tsString.replace(tsString.substring(0, 8), date)
+
+  return parseInt(newTs, 10)
+}
+
+export function replaceTimeInTs(date: string, ts: number): number {
+  date = date.replaceAll(':', '')
+  const tsString: string = ts.toString()
+  const newTs: string = tsString.replace(tsString.substring(8, 14), date)
+
+  return parseInt(newTs, 10)
+}

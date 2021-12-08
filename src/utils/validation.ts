@@ -1,5 +1,23 @@
 import { PublishedDevice } from '../components/MqttListener'
 
+export function validateDBRecord(record: Record<string, any>): PublishedDevice | undefined {
+  if (!record?.listenerlat || !record?.listenerlon || !record?.ts || !record?.listenername || !record?.beaconmac || !record?.rssi) {
+    console.error("Database contains invalid data", record)
+    return
+  }
+
+  const databaseDevice: PublishedDevice = {
+    beaconMac: record.beaconmac,
+    listenerCoordinates: [record.listenerlat, record.listenerlon],
+    listenerName: record.listenername,
+    rssi: record.rssi,
+    seenTimestamp: record.ts,
+    timestamp: record.ts,
+  }
+
+  return databaseDevice
+}
+
 export function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
   const message = JSON.parse(JSONMessage)
 
