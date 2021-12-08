@@ -42,11 +42,13 @@ export default function MqttListener() {
   const [previousMessage, setPreviousMessage] = useState<string>("")
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
+  const [loading, setLoading] = useState<boolean>(false)
 
   const { db, e } = useEasybase()
   const { message } = useSubscription('test');
 
   const fetchRecords = async (since: number) => {
+    setLoading(true)
     return await db("RAW MQTT")
       .return()
       .where(e.gt("ts", since))
@@ -58,7 +60,8 @@ export default function MqttListener() {
 
     console.log("fetch records since", settings.sinceTime)
     fetchRecords(settings.sinceTime).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
-    console.log(publishedDevices)
+    // TODO: loading, see if it works to set it here, might need to set it in the recalculate
+    setLoading(false)
   }, [settings])
 
   async function insertToDb(message: PublishedDevice) {

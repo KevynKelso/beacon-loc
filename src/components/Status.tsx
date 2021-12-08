@@ -1,7 +1,6 @@
-import React from 'react';
 import Badge from 'react-bootstrap/Badge'
 
-import { useMqttState } from 'mqtt-react-hooks';
+import { useMqttState } from 'mqtt-react-hooks'
 
 export default function Status() {
   /*
@@ -18,10 +17,8 @@ export default function Status() {
       connectionStatus === "Connected" ? "success" : "danger"
 
   return (
-    <div>
-      <Badge pill bg={badgeConnectionColor}>
-        {`Broker status: ${connectionStatus}`}
-      </Badge>
-    </div>
+    <Badge className="shadow-md" pill bg={badgeConnectionColor}>
+      {`Broker status: ${connectionStatus}`}
+    </Badge>
   )
 }
