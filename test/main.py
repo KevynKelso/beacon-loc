@@ -38,8 +38,8 @@ def main():
     client.connect("localhost", 1883, 60)
     client.subscribe("test")
 
-    test_case_1(client)
-    # test_case_2(client)
+    # test_case_1(client)
+    test_case_2(client)
 
 
 if __name__ == "__main__":

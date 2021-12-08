@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import { compose, withProps } from "recompose"
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
@@ -10,15 +10,14 @@ import markerIcon from "./markerIcon"
 
 import { DetectedBridge } from './MqttListener'
 import { Filters } from './FiltersBar'
-import { useState } from 'react'
 
 
 interface MapCoords {
   lat: number
   lng: number
 }
-const mapsAPIKey: string = Environment().googleMapsApiKey
-//const mapsAPIKey: string = ""
+//const mapsAPIKey: string = Environment().googleMapsApiKey
+const mapsAPIKey: string = ""
 
 const BeaconMap = compose(
   withProps({

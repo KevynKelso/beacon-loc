@@ -10,6 +10,7 @@ export interface ISettings {
   definitivelyHereRSSI: number  // dB
   globalTimeout: number         // seconds
   localTimeout: number          // seconds
+  lostDistance: number
   //mapUpateTime: number          // seconds
 }
 
@@ -17,6 +18,7 @@ export const DefaultSettings: ISettings = {
   definitivelyHereRSSI: -40, //-40 dB might be a good default idk
   globalTimeout: 5 * 60,     // 5 mins
   localTimeout: 5,           // 5 seconds
+  lostDistance: 0.01         // approximately 1km
   //mapUpateTime: 1 * 60,
 }
 
@@ -32,6 +34,7 @@ export default function SettingsModal(props: SettingsModalProps) {
   const [definitivelyHereRSSI, setDefinitivelyHereRSSI] = useState<number>(DefaultSettings.definitivelyHereRSSI)
   const [localTimeout, setLocalTimeout] = useState<number>(DefaultSettings.localTimeout)
   const [globalTimeout, setGlobalTimeout] = useState<number>(DefaultSettings.globalTimeout)
+  const [lostDistance, setLostDistance] = useState<number>(DefaultSettings.lostDistance)
 
   function onChangeDefinitivelyHereRSSI(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault()
@@ -53,40 +56,25 @@ export default function SettingsModal(props: SettingsModalProps) {
     setGlobalTimeout(value || DefaultSettings.globalTimeout)
   }
 
+  function onChangeLostDistance(e: React.ChangeEvent<HTMLInputElement>) {
+    e.preventDefault()
+    let value: number = parseFloat(e.target.value) * 0.01
+    if (value < 0) value = DefaultSettings.lostDistance
+    setLostDistance(value || DefaultSettings.lostDistance)
+  }
 
   function onSubmitSettings() {
     const settings: ISettings = {
       definitivelyHereRSSI: definitivelyHereRSSI,
       globalTimeout: globalTimeout,
       localTimeout: localTimeout,
+      lostDistance: lostDistance,
       //mapUpateTime: mapUpdateTime,
     }
 
     props.setSettings(settings)
     props.setShow(false)
   }
-
-  // we might not need this after all
-  //
-  //const GOOGLE_API_REQUEST_COST: number = 0.007
-  //const [mapUpdateTime, setMapUpdateTime] = useState<number>(DefaultSettings.mapUpateTime)
-  //function onChangeMapUpdateTime(e: React.ChangeEvent<HTMLInputElement>) {
-  //e.preventDefault()
-  //const value: number = parseInt(e.target.value, 10)
-  //setMapUpdateTime(value || DefaultSettings.mapUpateTime)
-  //}
-  //<Form.Group className="mt-5" controlId="formGlobalTimeout">
-  //<Form.Label>Map update time: {mapUpdateTime} seconds</Form.Label>
-  //<Form.Control type="number" onChange={onChangeMapUpdateTime} />
-  //<Form.Text className="text-muted">
-  //Time required for map to update if there is a change in beacon whereabouts
-  //</Form.Text>
-  //<div>
-  //<Form.Text className="text-red-500">
-  //Estimated runtime cost: {Math.round(GOOGLE_API_REQUEST_COST * (3600 / mapUpdateTime) * 1e4) / 1e4} USD per hour
-  //</Form.Text>
-  //</div>
-  //</Form.Group>
 
   return (
     <Modal show={props.show} fullscreen={"lg-down"} onHide={() => props.setShow(false)}>
@@ -113,11 +101,19 @@ export default function SettingsModal(props: SettingsModalProps) {
             </Form.Text>
           </Form.Group>
 
+          <Form.Group className="mt-5" controlId="formLostDistance">
+            <Form.Label>Lost Distance: ~{lostDistance * 100} km</Form.Label>
+            <Form.Control type="number" onChange={onChangeLostDistance} />
+            <Form.Text className="text-muted">
+              If a bridge gets this far away from a beacon, the beacon disassociates with the bridge and groups itself separately. NOTE: This distance is highly approximate and based on the latitude/longitude coordinate system. Results will be highly inaccurate for distances larger than 1,000 km.
+            </Form.Text>
+          </Form.Group>
+
           <Form.Group className="mt-5" controlId="formDefinitiveRSSI">
             <Form.Label>Definitive RSSI {definitivelyHereRSSI} dB</Form.Label>
             <Form.Range onChange={onChangeDefinitivelyHereRSSI} />
             <Form.Text className="text-muted">
-              If a bridge sees an RSSI this good, it is definately at that bridge
+              If a bridge sees an RSSI this good, it is definitely at that bridge
             </Form.Text>
           </Form.Group>
         </Form>

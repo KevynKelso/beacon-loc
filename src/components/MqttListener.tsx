@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 import { useSubscription } from 'mqtt-react-hooks'
+import { useEasybase } from 'easybase-react'
+
 
 import { ISettings, DefaultSettings } from './SettingsModal'
 import BeaconMap from './BeaconMap'
-import { getCurrentTimestamp } from "../utils/timestamp"
+import { getCurrentTimestamp } from '../utils/timestamp'
+import { validateMqttMessage } from '../utils/mqtt'
+import { convertDevicesToBridges } from '../utils/devices'
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -16,6 +20,8 @@ interface MqttBridgePublish {
 export interface PublishedDevice extends MqttBridgePublish {
   seenTimestamp: number
 }
+
+export type PublishedDeviceUpdater = (device: PublishedDevice) => void
 
 export interface DetectedBridge {
   coordinates: number[]
@@ -30,38 +36,13 @@ export interface Beacon {
 }
 
 export default function MqttListener() {
-  const { message } = useSubscription('test');
-  const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [bridges, setBridges] = useState<DetectedBridge[]>([])
-  //console.log(publishedDevices)
-
+  const [easybaseData, setEasybaseData] = useState<number[] | Record<string, any>[]>([])
+  const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
 
-  function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
-    const message = JSON.parse(JSONMessage)
-
-    if (!message || !message.listenerCoordinates || !message.timestamp ||
-      !message.listenerName || !message.beaconMac || !message.rssi) {
-      console.error("Mqtt message is not of type MqttBridgePublish", message)
-      return
-    }
-
-    if (message.listenerCoordinates.length != 2) {
-      console.error("Invalid coordinates", message.listenerCoordinates)
-      return
-    }
-
-    const publishMessage: PublishedDevice = {
-      beaconMac: message.beaconMac,
-      listenerCoordinates: message.listenerCoordinates,
-      listenerName: message.listenerName.toString(),
-      rssi: message.rssi,
-      seenTimestamp: message.timestamp,
-      timestamp: message.timestamp,
-    }
-
-    return publishMessage
-  }
+  const { db } = useEasybase()
+  const { message } = useSubscription('test');
 
   function pushDevicesUpdate(device: PublishedDevice, newDevice: boolean, index?: number): void {
     let devices: PublishedDevice[] = publishedDevices
@@ -82,34 +63,78 @@ export default function MqttListener() {
     setBridges(convertDevicesToBridges(devices))
   }
 
-  // main logic for incomming messages
-  useEffect(() => {
-    // logic for rejecting bad messages
-    if (!message?.message || typeof message.message != "string") return
-    const receivedMessage: PublishedDevice | undefined = validateMqttMessage(message.message)
-    if (!receivedMessage) return
+  const fetchRecords = async () => {
+    const ebData: number[] | Record<string, any>[] = await db("RAW MQTT").return().limit(10).all();
+    setEasybaseData(ebData);
+  }
 
-    // have we seen this bridge before?
-    const seenBridge: DetectedBridge | undefined = bridges.find((e: DetectedBridge) => e.listenerName === receivedMessage.listenerName)
-    if (seenBridge) {
-      // has this bridge's location changed significantly in comparison to the beacons he's seen before?
-      seenBridge.beacons?.forEach((b: Beacon) => {
-        // TODO: add significant location change to the settings
-        const significantLocationChange: number = 0.01 // this is approximately 1km
-        const deltaLat: number = b.coordinates[0] - seenBridge.coordinates[0]
-        const deltaLng: number = b.coordinates[1] - seenBridge.coordinates[1]
-        const distanceChanged = Math.sqrt(Math.pow(deltaLat, 2) + Math.pow(deltaLng, 2))
+  //useEffect(() => {
+  //fetchRecords();
+  //}, [])
 
-        // TODO: this is 1 cycle behind
-        if (distanceChanged > significantLocationChange) {
-          const newListenerName: string = `${receivedMessage.timestamp}`
-          const index: number = publishedDevices.map(e => e.beaconMac).indexOf(b.beaconMac)
+  async function insertToDb(message: PublishedDevice) {
+    try {
+      await db('RAW MQTT').insert({
+        listenerLat: message.listenerCoordinates[0],
+        listenerLon: message.listenerCoordinates[1],
+        ts: message.timestamp,
+        listenerName: message.listenerName,
+        beaconMac: message.beaconMac,
+        rssi: message.rssi,
+      }).one(); // Inserts, updates, and deletes will refresh the `frame` below
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  function isTooFarAway(lostDistance: number, a: PublishedDevice, b: PublishedDevice) {
+    const deltaLat: number = a.listenerCoordinates[0] - b.listenerCoordinates[0]
+    const deltaLng: number = a.listenerCoordinates[1] - b.listenerCoordinates[1]
+    const distanceChanged = Math.sqrt(Math.pow(deltaLat, 2) + Math.pow(deltaLng, 2))
+
+    return distanceChanged > lostDistance
+  }
+
+  // groups beacons into a new listener group if they are too far away from the inDevice
+  function separateDevicesTooFarAway(inDevice: PublishedDevice) {
+    // find all the published devices associated w/ this received message listener
+    const bridgeDevices: PublishedDevice[] | undefined =
+      publishedDevices.filter(
+        (e: PublishedDevice) => e.listenerName === inDevice.listenerName
+      )
+
+    if (bridgeDevices?.length) {
+      bridgeDevices.forEach((d: PublishedDevice) => {
+        if (isTooFarAway(settings.lostDistance, d, inDevice)) {
+          // this beacon is too far away from the listener and must be associated with it's
+          // own location
+          const newListenerName: string = `${inDevice.timestamp}`
+          const index: number = publishedDevices.map(e => e.beaconMac).indexOf(d.beaconMac)
           let newDevice: PublishedDevice = publishedDevices[index]
           newDevice.listenerName = newListenerName
           pushDevicesUpdate(newDevice, false, index)
         }
       })
     }
+  }
+
+  function processRawMessage(message: PublishedDevice, updater: PublishedDeviceUpdater) {
+  }
+
+  // main logic for incomming messages
+  useEffect(() => {
+    // ideally, we put each received message into the database in order of time recieved,
+    // then all this logic gets ran for each message since a certain time every time a setting changes.
+    // That way we can re-run the logic for different settings. Everytime a new message comes in though,
+    // we will still have to run this logic?
+    //
+    // reject bad messages
+    if (!message?.message || typeof message.message != "string") return
+    const receivedMessage: PublishedDevice | undefined = validateMqttMessage(message.message)
+    if (!receivedMessage) return
+    //insertToDb(receivedMessage)
+
+    separateDevicesTooFarAway(receivedMessage)
 
     // check if beaconMac is in publishedDevices
     if (!publishedDevices.some((e: MqttBridgePublish) => e.beaconMac === receivedMessage.beaconMac)) {
@@ -117,10 +142,10 @@ export default function MqttListener() {
     }
 
     // from this point on, beacon is in publishedDevices already (we've seen it
-    // before
+    // before)
     const index: number = publishedDevices.map(e => e.beaconMac).indexOf(receivedMessage.beaconMac)
 
-    // it is definately at this listener if this is the case
+    // it is definitely at this listener if this is the case
     if (receivedMessage.rssi >= settings.definitivelyHereRSSI) {
       return pushDevicesUpdate(receivedMessage, false, index)
     }
@@ -147,54 +172,6 @@ export default function MqttListener() {
     publishedDevices[index].seenTimestamp = receivedMessage.timestamp
     setPublishedDevices(publishedDevices)
   }, [message])
-
-
-  function convertDevicesToBridges(devices: PublishedDevice[]): DetectedBridge[] {
-    let detectedBridges: DetectedBridge[] = []
-    // filter out only unique names to add to detected bridges
-    devices.forEach((device: PublishedDevice) => {
-      // determine if this device is in detectedBridges
-      const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName === device.listenerName);
-      // TODO: possibly convert the mac address to a useful name for the beacon here
-      if (i <= -1) {
-        // it is not, so make a new bridge entry
-        return detectedBridges.push(
-          {
-            listenerName: device.listenerName,
-            coordinates: device.listenerCoordinates,
-            beacons: [{
-              beaconMac: device.beaconMac,
-              timestamp: device.seenTimestamp,
-              coordinates: device.listenerCoordinates,
-            }],
-          })
-      }
-      if (!detectedBridges[i].beacons) return
-
-      // already in there, add this device to the bridge
-      detectedBridges[i].beacons?.push(
-        {
-          beaconMac: device.beaconMac,
-          timestamp: device.seenTimestamp,
-          coordinates: device.listenerCoordinates,
-        })
-
-      // get the most recently seen device's coordinates
-      const mostRecentBeacon: Beacon | undefined = detectedBridges[i].beacons?.reduce(
-        (previousBeacon, currentBeacon) =>
-          previousBeacon.timestamp > currentBeacon.timestamp ? previousBeacon : currentBeacon
-      )
-      if (mostRecentBeacon) {
-        detectedBridges[i].coordinates = mostRecentBeacon.coordinates
-      }
-    })
-
-    // TODO: potentially sort this stuff
-    // sorted by name
-    //detectedBridges.sort((a, b) => (a.listenerName > b.listenerName) ? 1 : ((b.listenerName > a.listenerName) ? -1 : 0))
-
-    return detectedBridges
-  }
 
   return (
     <BeaconMap
