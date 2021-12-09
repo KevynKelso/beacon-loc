@@ -17,6 +17,7 @@ interface MqttBridgePublish {
 
 export interface PublishedDevice extends MqttBridgePublish {
   seenTimestamp: number
+  timedOut?: boolean
 }
 
 export type PublishedDeviceUpdater = (devices: PublishedDevice[]) => void
@@ -42,27 +43,16 @@ export default function MqttListener() {
   const [previousMessage, setPreviousMessage] = useState<string>("")
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
-  const [loading, setLoading] = useState<boolean>(false)
 
   const { db, e } = useEasybase()
   const { message } = useSubscription('test');
 
   const fetchRecords = async (since: number) => {
-    setLoading(true)
     return await db("RAW MQTT")
       .return()
       .where(e.gt("ts", since))
       .all() as Record<string, any>[]
   }
-
-  useEffect(() => {
-    if (settings === DefaultSettings) return
-
-    console.log("fetch records since", settings.sinceTime)
-    fetchRecords(settings.sinceTime).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
-    // TODO: loading, see if it works to set it here, might need to set it in the recalculate
-    setLoading(false)
-  }, [settings])
 
   async function insertToDb(message: PublishedDevice) {
     try {
@@ -78,6 +68,23 @@ export default function MqttListener() {
       console.error(e)
     }
   }
+
+  //useEffect(() => {
+  //console.log(settings.globalTimeout)
+  //// this function will run every few minutes. The *1e3 is to convert seconds to ms for setInterval
+  //const interval = setInterval(() =>
+  //timeoutDevices(publishedDevices, settings.globalTimeout, setBridges, setPublishedDevices),
+  //settings.globalTimeout * 1e3,
+  //)
+  //return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
+  //})
+
+  // logic for recalculating based on new data from database
+  useEffect(() => {
+    if (settings === DefaultSettings) return
+
+    fetchRecords(settings.sinceTime).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
+  }, [settings])
 
   // logic for incomming messages:
   // Put each message into the database, then process it with (processRawMessage's)

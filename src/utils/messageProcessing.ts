@@ -52,7 +52,7 @@ function separateDevicesTooFarAway(
       if (isTooFarAway(settings.lostDistance, d, inDevice)) {
         // this beacon is too far away from the listener and must be associated with it's
         // own location
-        const newListenerName: string = `${inDevice.timestamp}`
+        const newListenerName: string = `Out of range: ${d.listenerName}`
         const index: number = devices.map(e => e.beaconMac).indexOf(d.beaconMac)
         let newDevice: PublishedDevice = devices[index]
         newDevice.listenerName = newListenerName
@@ -148,4 +148,29 @@ export function recalculate(
   updaterBridges(newBridges)
   updaterDevices(newPublishedDevices)
 }
+
+//export function timeoutDevices(
+  //devices: PublishedDevice[],
+  //globalTimeout: number, // this must be in seconds
+  //updaterBridges: DetectedBridgeUpdater,
+  //updaterDevices: PublishedDeviceUpdater,
+//) {
+  //const currentTime: number = getCurrentTimestamp()
+  //let newPublishedDevices: PublishedDevice[] = []
+  ////let newBridges: DetectedBridge[] = []
+
+  //devices.forEach((device: PublishedDevice) => {
+    //// global timeout is in seconds, so should be able to determine if device
+    //// is timed out by subtracting current time - timestamp and seeing if it's
+    //// greater than the global timeout
+    //if (currentTime - device.seenTimestamp > globalTimeout) {
+      //let newDevice: PublishedDevice = device
+      //newDevice.timedOut = true
+      //newPublishedDevices = [...newPublishedDevices, newDevice]
+      //return
+    //}
+    //newPublishedDevices = [...newPublishedDevices, device]
+  //})
+
+
 

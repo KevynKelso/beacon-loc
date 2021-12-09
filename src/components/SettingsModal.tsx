@@ -104,15 +104,29 @@ export default function SettingsModal(props: SettingsModalProps) {
 
         <Form>
           <Form.Group controlId="formSinceTime">
-            <div className="flex">
-              <Form.Label className="flex-grow">Messages since: {formatTimestamp(sinceTime)}</Form.Label>
+            <Form.Label className="flex-grow">Messages since: {formatTimestamp(sinceTime)}</Form.Label>
+            <Form.Control className="mt-1" type="date" value={formatTimestamp(sinceTime).split(' ')[0]} onChange={onChangeDate} />
+            <Form.Control className="mt-1" type="time" value={formatTimestamp(sinceTime).split(' ')[1]} onChange={onChangeTime} />
+            <Form.Text className="text-muted">
+              Pull messages from database since this date.
+            </Form.Text>
+            <div className="flex mt-2">
+              <div className="flex-grow" />
               <Button
                 className="mr-2"
                 size="sm"
-                onClick={() => setSinceTime(0)}
+                onClick={() => setSinceTime(getCurrentTimestamp() - 7e6)}
                 variant="danger"
               >
-                All messages
+                Last 7 days
+              </Button>
+              <Button
+                className="mr-2"
+                size="sm"
+                onClick={() => setSinceTime(getCurrentTimestamp() - 2e6)}
+                variant="danger"
+              >
+                Last 2 days
               </Button>
               <Button
                 size="sm"
@@ -122,11 +136,6 @@ export default function SettingsModal(props: SettingsModalProps) {
                 Reset
               </Button>
             </div>
-            <Form.Control className="mt-1" type="date" value={formatTimestamp(sinceTime).split(' ')[0]} onChange={onChangeDate} />
-            <Form.Control className="mt-1" type="time" value={formatTimestamp(sinceTime).split(' ')[1]} onChange={onChangeTime} />
-            <Form.Text className="text-muted">
-              Pull messages from database since this date.
-            </Form.Text>
           </Form.Group>
           <Form.Group className="mt-4" controlId="formLocalTimeout">
             <Form.Label>Local timeout: {localTimeout} seconds</Form.Label>

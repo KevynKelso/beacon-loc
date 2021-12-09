@@ -21,7 +21,9 @@ export default function markerIcon(
 
   const totalWidth = nameBoxWidth + numberBoxWidth
 
-  const notActiveColor = isNaN(+truncatedName) ? prussianBlue : lostRed
+  //const notActiveColor = isNaN(+truncatedName) ? prussianBlue : lostRed
+  const notActiveColor = !name.toLocaleLowerCase().includes("out of range") ? prussianBlue : lostRed
+
   const fillColor: string = active ? darkSkyBlue : notActiveColor
   const textColor: string = active ? "5, 5, 5" : "255, 255, 255"
   return {
