@@ -35,10 +35,11 @@ export default function SideBar(props: SideBarProps) {
 
   return (
     <div className={props.className} >
-      <div className={showBridges ? "shadow-md absolute bg-prussian-blue" : "absolute"}>
+      <div className={showBridges ? "shadow-md absolute bg-em-dark" : "absolute"}>
         <div className="flex m-3">
           <Button
             onClick={() => setShowBridges(!showBridges)}
+            className={showBridges ? "" : "bg-em-primary border-none"}
             variant={showBridges ? "secondary" : "primary"}
           >
             {showBridges ? "Hide detected bridges" : "Show detected bridges"}
@@ -51,7 +52,7 @@ export default function SideBar(props: SideBarProps) {
             {props.bridges.length > 0 ?
               <div>
                 <div className="max-h-96 overflow-y-scroll">
-                  <Table striped borderless hover className='whitespace-nowrap max-w-1/3'>
+                  <Table striped borderless hover className='bg-em-primary whitespace-nowrap max-w-1/3'>
                     <thead className="sticky top-0 bg-prussian-blue text-white">
                       <tr>
                         <th>Bridge</th>
@@ -61,7 +62,7 @@ export default function SideBar(props: SideBarProps) {
                     <tbody>
                       {props.bridges.map((d: DetectedBridge, idx: number) => {
                         // if this bridge is not in the filters (-1), show it
-                        if (props.filters.bridges.indexOf(d.listenerName) === -1) {
+                        if (props.filters.bridges.indexOf(d.bridgeName) === -1) {
                           return (
                             <SideBarTableElement
                               activeMarker={props.activeMarker}
@@ -85,7 +86,7 @@ export default function SideBar(props: SideBarProps) {
             }
             <FiltersBar
               availableBeacons={["test", "tes"]}
-              availableBridges={props.bridges.map((d: DetectedBridge) => d.listenerName)}
+              availableBridges={props.bridges.map((d: DetectedBridge) => d.bridgeName)}
               updateFilters={updateFilters}
               existingFilters={props.filters}
             />

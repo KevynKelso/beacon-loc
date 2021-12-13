@@ -5,17 +5,17 @@ export function convertDevicesToBridges(devices: PublishedDevice[]): DetectedBri
   // filter out only unique names to add to detected bridges
   devices.forEach((device: PublishedDevice) => {
     // determine if this device is in detectedBridges
-    const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.listenerName === device.listenerName);
+    const i: number = detectedBridges.findIndex((listener: DetectedBridge) => listener.bridgeName === device.bridgeName);
     if (i <= -1) {
       // it is not, so make a new bridge entry
       return detectedBridges.push(
         {
-          listenerName: device.listenerName,
-          coordinates: device.listenerCoordinates,
+          bridgeName: device.bridgeName,
+          coordinates: device.bridgeCoordinates,
           beacons: [{
             beaconMac: device.beaconMac,
             timestamp: device.seenTimestamp,
-            coordinates: device.listenerCoordinates,
+            coordinates: device.bridgeCoordinates,
           }],
         })
     }
@@ -26,7 +26,7 @@ export function convertDevicesToBridges(devices: PublishedDevice[]): DetectedBri
       {
         beaconMac: device.beaconMac,
         timestamp: device.seenTimestamp,
-        coordinates: device.listenerCoordinates,
+        coordinates: device.bridgeCoordinates,
       })
 
     // get the most recently seen device's coordinates

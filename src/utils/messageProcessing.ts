@@ -26,8 +26,8 @@ function pushDevicesUpdate(
 // calculates pythagoean distance based on lat, lng coords, returns whether or
 // not it's too far away
 function isTooFarAway(lostDistance: number, a: PublishedDevice, b: PublishedDevice) {
-  const deltaLat: number = a.listenerCoordinates[0] - b.listenerCoordinates[0]
-  const deltaLng: number = a.listenerCoordinates[1] - b.listenerCoordinates[1]
+  const deltaLat: number = a.bridgeCoordinates[0] - b.bridgeCoordinates[0]
+  const deltaLng: number = a.bridgeCoordinates[1] - b.bridgeCoordinates[1]
   const distanceChanged = Math.sqrt(Math.pow(deltaLat, 2) + Math.pow(deltaLng, 2))
 
   return distanceChanged > lostDistance
@@ -44,7 +44,7 @@ function separateDevicesTooFarAway(
   // find all the published devices associated w/ this received message listener
   const bridgeDevices: PublishedDevice[] | undefined =
     devices.filter(
-      (e: PublishedDevice) => e.listenerName === inDevice.listenerName
+      (e: PublishedDevice) => e.bridgeName === inDevice.bridgeName
     )
 
   if (bridgeDevices?.length) {
@@ -52,10 +52,10 @@ function separateDevicesTooFarAway(
       if (isTooFarAway(settings.lostDistance, d, inDevice)) {
         // this beacon is too far away from the listener and must be associated with it's
         // own location
-        const newListenerName: string = `Out of range: ${d.listenerName}`
+        const newListenerName: string = `Out of range: ${d.bridgeName}`
         const index: number = devices.map(e => e.beaconMac).indexOf(d.beaconMac)
         let newDevice: PublishedDevice = devices[index]
-        newDevice.listenerName = newListenerName
+        newDevice.bridgeName = newListenerName
         pushDevicesUpdate(newDevice, devices, index, false, updaterBridges, updaterDevices)
       }
     })
@@ -69,6 +69,7 @@ export function processRawMessage(
   updaterBridges: DetectedBridgeUpdater,
   updaterDevices: PublishedDeviceUpdater,
 ) {
+  console.log(message)
   separateDevicesTooFarAway(message, devices, settings, updaterBridges, updaterDevices)
 
   // check if beaconMac is in devices
@@ -88,7 +89,7 @@ export function processRawMessage(
   const publishedDevice: PublishedDevice = devices[index]
 
   // receive an update from the same device we've seen before
-  if (message.listenerName === publishedDevice.listenerName) {
+  if (message.bridgeName === publishedDevice.bridgeName) {
     return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
   }
 
@@ -114,6 +115,7 @@ export function recalculate(
   updaterBridges: DetectedBridgeUpdater,
   updaterDevices: PublishedDeviceUpdater
 ) {
+  console.log(records)
   // reset devices and bridges
   updaterBridges([])
   updaterDevices([])
@@ -137,6 +139,7 @@ export function recalculate(
   records.forEach((record: Record<string, any>) => {
     // need to build the array of publishedDevices first, then set the state
     const device: PublishedDevice | undefined = validateDBRecord(record)
+    console.log(device)
     if (!device) return
     processRawMessage(
       newPublishedDevices, device, settings,
@@ -145,6 +148,7 @@ export function recalculate(
   })
 
   // reset react state
+  console.log(newPublishedDevices)
   updaterBridges(newBridges)
   updaterDevices(newPublishedDevices)
 }

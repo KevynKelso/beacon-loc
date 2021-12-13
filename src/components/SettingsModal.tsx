@@ -87,7 +87,6 @@ export default function SettingsModal(props: SettingsModalProps) {
       localTimeout: localTimeout,
       lostDistance: lostDistance,
       sinceTime: sinceTime,
-      //mapUpateTime: mapUpdateTime,
     }
 
     props.setSettings(settings)
@@ -96,7 +95,7 @@ export default function SettingsModal(props: SettingsModalProps) {
 
   return (
     <Modal show={props.show} fullscreen={"lg-down"} onHide={() => props.setShow(false)}>
-      <Modal.Header closeButton className="bg-steel-teal">
+      <Modal.Header closeButton className="bg-em-primary">
         <Modal.Title className="mr-3 text-white">Settings</Modal.Title>
         <Status />
       </Modal.Header>
@@ -115,7 +114,7 @@ export default function SettingsModal(props: SettingsModalProps) {
               <Button
                 className="mr-2"
                 size="sm"
-                onClick={() => setSinceTime(getCurrentTimestamp() - 7e6)}
+                onClick={() => setSinceTime(getCurrentTimestamp(-168))}
                 variant="danger"
               >
                 Last 7 days
@@ -123,7 +122,7 @@ export default function SettingsModal(props: SettingsModalProps) {
               <Button
                 className="mr-2"
                 size="sm"
-                onClick={() => setSinceTime(getCurrentTimestamp() - 2e6)}
+                onClick={() => setSinceTime(getCurrentTimestamp(-48))}
                 variant="danger"
               >
                 Last 2 days
@@ -171,7 +170,7 @@ export default function SettingsModal(props: SettingsModalProps) {
         </Form>
 
         <div className="grid mt-4">
-          <Button className="justify-self-end" variant="primary" type="submit" onClick={onSubmitSettings}>
+          <Button className="bg-em-primary border-none justify-self-end" variant="primary" type="submit" onClick={onSubmitSettings}>
             Save and close
           </Button>
         </div>

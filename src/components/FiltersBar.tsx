@@ -63,6 +63,7 @@ export default function FiltersBar(props: FiltersBarProps) {
           <Button
             onClick={(e) => openFilterBridgesModal(e)}
             //className='ml-2'
+            className="bg-em-primary border-none"
             variant="primary"
           >
             {filterBridgesTitle}

@@ -40,8 +40,8 @@ def main():
     client.subscribe("test")
 
     # test_case_1(client)
-    test_case_2(client)
-    # test_case_3(client)
+    # test_case_2(client)
+    test_case_3(client)
 
 
 if __name__ == "__main__":

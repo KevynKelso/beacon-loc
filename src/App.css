@@ -42,7 +42,8 @@
 }
 
 .bg-prussian-blue {
-    background-color: #172A3A;
+    /*background-color: #172A3A;*/
+    background-color: #1676A3;
 }
 
 .bg-steel-teal {
@@ -50,11 +51,25 @@
 }
 
 .bg-warm-black {
-    background-color: #004346;
+    /*background-color: #004346;*/
+    background-color: #FFFFFF;
 }
 
 .bg-dark-sky-blue {
     background-color: #74B3CE;
+}
+
+.bg-em-primary {
+    /*background-color: #172A3A;*/
+    background-color: #1676A3 !important;
+}
+
+.bg-em-secondary {
+    background-color: #00405e !important;
+}
+
+.bg-em-dark {
+    background-color: #343a40;
 }
 
 /* width */

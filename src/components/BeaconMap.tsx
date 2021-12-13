@@ -42,13 +42,13 @@ const BeaconMap = compose(
 
   function renderBridgeMarkers(bridges: DetectedBridge[]) {
     return bridges.map((d: DetectedBridge, idx: number) => {
-      const visible: boolean = filters.bridges.indexOf(d.listenerName) === -1
+      const visible: boolean = filters.bridges.indexOf(d.bridgeName) === -1
       return (
         <Marker
-          title={`Bridge: ${d.listenerName}`}
-          key={`${d.listenerName}${idx}`}
+          title={`Bridge: ${d.bridgeName}`}
+          key={`${d.bridgeName}${idx}`}
           position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
-          icon={markerIcon(d.listenerName, d.beacons?.length || 0, activeMarker === idx)}
+          icon={markerIcon(d.bridgeName, d.beacons?.length || 0, activeMarker === idx)}
           onClick={() => onMarkerClick(idx)}
           visible={visible}
           zIndex={activeMarker === idx ? 100 : undefined}

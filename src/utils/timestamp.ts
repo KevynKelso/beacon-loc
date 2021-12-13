@@ -1,7 +1,11 @@
 // generates timestamp in the form of "yyyymmddHHMMss" e.g. "20211119145525"
-export function getCurrentTimestamp(): number {
+export function getCurrentTimestamp(hourOffset?: number): number {
   const d: number = Date.now()
   const date = new Date(d)
+
+  if (hourOffset) {
+    date.setHours(date.getHours() + hourOffset)
+  }
 
   return parseInt(`${String(date.getFullYear()).padStart(4, '0')}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`)
 }

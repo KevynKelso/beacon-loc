@@ -48,8 +48,8 @@ export default function FiltersModal(props: ModalProps) {
 
   return (
     <Modal show={props.show} fullscreen={"lg-down"} onHide={() => props.setShow(false)}>
-      <Modal.Header closeButton>
-        <Modal.Title>{props.title}</Modal.Title>
+      <Modal.Header closeButton className="bg-em-primary">
+        <Modal.Title className="text-white">{props.title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form.Text className="text-muted">
@@ -79,7 +79,7 @@ export default function FiltersModal(props: ModalProps) {
         </div>
         <div className="grid mt-5">
           <Button
-            className="justify-self-end"
+            className="bg-em-primary border-none justify-self-end"
             onClick={onSubmitFilters}
             type="submit"
             variant="primary"

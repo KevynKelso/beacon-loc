@@ -19,8 +19,8 @@ interface SideBarTableElementProps {
 export default function SideBarTableElement(props: SideBarTableElementProps) {
   const [copied, setCopied] = useState<boolean>(false)
 
-  const truncatedName: string = props.bridge.listenerName.substring(0, 15)
-  const rowClasses: string = props.idx % 2 ? "text-white" : "bg-warm-black text-white"
+  const truncatedName: string = props.bridge.bridgeName.substring(0, 15)
+  const rowClasses: string = props.idx % 2 ? "text-white" : "bg-em-secondary text-white"
 
   function onCopyButtonClick() {
     navigator.clipboard.writeText(`${props.bridge.coordinates[0]},${props.bridge.coordinates[1]}`)
@@ -36,7 +36,7 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
       overlay={
         <Popover>
           <Popover.Header>
-            <h6 className="mb-0"><strong>Bridge:</strong> {props.bridge.listenerName}</h6>
+            <h6 className="mb-0"><strong>Bridge:</strong> {props.bridge.bridgeName}</h6>
           </Popover.Header>
           <Popover.Body>
             <p className="font-bold">Devices: {props.bridge.beacons?.length || 0}</p>
@@ -51,7 +51,7 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
                 <tbody>
                   {props.bridge.beacons?.map((beacon: Beacon) =>
                   (
-                    <tr key={`${props.bridge.listenerName}-${beacon.beaconMac}`}>
+                    <tr key={`${props.bridge.bridgeName}-${beacon.beaconMac}`}>
                       <td>{beacon.beaconMac}</td>
                       <td>{formatTimestamp(beacon.timestamp)}</td>
                     </tr>

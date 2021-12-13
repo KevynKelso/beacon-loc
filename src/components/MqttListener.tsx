@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react'
 import { useSubscription } from 'mqtt-react-hooks'
 import { useEasybase } from 'easybase-react'
 
-import { ISettings, DefaultSettings } from './SettingsModal'
 import BeaconMap from './BeaconMap'
-import { validateMqttMessage } from '../utils/validation'
+
+import { ISettings, DefaultSettings } from './SettingsModal'
+import { getCurrentTimestamp } from '../utils/timestamp'
 import { processRawMessage, recalculate } from '../utils/messageProcessing'
+import { validateMqttMessage } from '../utils/validation'
 
 interface MqttBridgePublish {
   beaconMac: string
-  listenerCoordinates: number[]
-  listenerName: string
+  bridgeCoordinates: number[]
+  bridgeName: string
   rssi: number
   timestamp: number
+  pdu?: number
 }
 
 export interface PublishedDevice extends MqttBridgePublish {
@@ -20,12 +23,22 @@ export interface PublishedDevice extends MqttBridgePublish {
   timedOut?: boolean
 }
 
+export interface DBEntry {
+  ts: number
+  beaconMac: string
+  rssi: number
+  bridgeLat: number
+  bridgeLon: number
+  bridgeName: string
+  pdu: number
+}
+
 export type PublishedDeviceUpdater = (devices: PublishedDevice[]) => void
 export type DetectedBridgeUpdater = (bridges: DetectedBridge[]) => void
 
 export interface DetectedBridge {
   coordinates: number[]
-  listenerName: string // this must be unique for each detected bridge
+  bridgeName: string // this must be unique for each detected bridge
   beacons?: Beacon[]
 }
 
@@ -43,6 +56,8 @@ export default function MqttListener() {
   const [previousMessage, setPreviousMessage] = useState<string>("")
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
+  const [startupQuery, setStartupQuery] = useState<boolean>(true)
+  console.log(publishedDevices)
 
   const { db, e } = useEasybase()
   const { message } = useSubscription('test');
@@ -55,15 +70,18 @@ export default function MqttListener() {
   }
 
   async function insertToDb(message: PublishedDevice) {
+    const dbEntry: DBEntry = {
+      bridgeLat: message.bridgeCoordinates[0],
+      bridgeLon: message.bridgeCoordinates[1],
+      ts: message.timestamp,
+      bridgeName: message.bridgeName,
+      beaconMac: message.beaconMac,
+      rssi: message.rssi,
+      pdu: 0,
+    }
+
     try {
-      await db('RAW MQTT').insert({
-        listenerLat: message.listenerCoordinates[0],
-        listenerLon: message.listenerCoordinates[1],
-        ts: message.timestamp,
-        listenerName: message.listenerName,
-        beaconMac: message.beaconMac,
-        rssi: message.rssi,
-      }).one(); // Inserts, updates, and deletes will refresh the `frame` below
+      await db('RAW MQTT').insert(dbEntry).one(); // Inserts, updates, and deletes will refresh the `frame` below
     } catch (e) {
       console.error(e)
     }
@@ -84,6 +102,15 @@ export default function MqttListener() {
     if (settings === DefaultSettings) return
 
     fetchRecords(settings.sinceTime).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
+  }, [settings])
+
+  // first database query upon client connection. Pulls last hour of info
+  useEffect(() => {
+    if (startupQuery) {
+      // fetchRecords from last hour '-1'
+      fetchRecords(getCurrentTimestamp(-1)).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
+      setStartupQuery(false)
+    }
   }, [settings])
 
   // logic for incomming messages:

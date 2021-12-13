@@ -34,9 +34,9 @@ def random_coords_close_to_home():
 
 def create_publish_data(lat, lon, ts, name, mac, rssi) -> dict:
     return {
-        "listenerCoordinates": [lat, lon],
+        "bridgeCoordinates": [lat, lon],
         "timestamp": ts,
-        "listenerName": name,
+        "bridgeName": name,
         "beaconMac": mac,
         "rssi": rssi,
     }
