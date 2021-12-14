@@ -57,7 +57,6 @@ export default function MqttListener() {
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
   const [startupQuery, setStartupQuery] = useState<boolean>(true)
-  console.log(publishedDevices)
 
   const { db, e } = useEasybase()
   const { message } = useSubscription('test');
@@ -86,16 +85,6 @@ export default function MqttListener() {
       console.error(e)
     }
   }
-
-  //useEffect(() => {
-  //console.log(settings.globalTimeout)
-  //// this function will run every few minutes. The *1e3 is to convert seconds to ms for setInterval
-  //const interval = setInterval(() =>
-  //timeoutDevices(publishedDevices, settings.globalTimeout, setBridges, setPublishedDevices),
-  //settings.globalTimeout * 1e3,
-  //)
-  //return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
-  //})
 
   // logic for recalculating based on new data from database
   useEffect(() => {
@@ -127,6 +116,7 @@ export default function MqttListener() {
     if (!receivedMessage) return
 
     insertToDb(receivedMessage)
+    console.log(receivedMessage)
 
     processRawMessage(
       publishedDevices, receivedMessage, settings,

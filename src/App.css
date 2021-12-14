@@ -59,6 +59,10 @@
     background-color: #74B3CE;
 }
 
+.dark-sky-blue-hover:hover {
+    background-color: #74B3CE !important;
+}
+
 .bg-em-primary {
     /*background-color: #172A3A;*/
     background-color: #1676A3 !important;
@@ -70,6 +74,19 @@
 
 .bg-em-dark {
     background-color: #343a40;
+}
+
+.text-em-primary {
+    /*background-color: #172A3A;*/
+    color: #1676A3 !important;
+}
+
+.border-em-primary {
+    border-color: #1676A3 !important;
+}
+
+@font-face {
+    font-family: "Helvetica,Arial,sans-serif";
 }
 
 /* width */

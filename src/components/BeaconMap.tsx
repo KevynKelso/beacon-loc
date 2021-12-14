@@ -64,8 +64,12 @@ const BeaconMap = compose(
       return
     }
 
-    setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
+    //setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
     setActiveMarker(activeMarkerToSet)
+  }
+
+  function onGoToClick(d: DetectedBridge) {
+    setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
   }
 
   function onMapClick() {
@@ -91,6 +95,7 @@ const BeaconMap = compose(
         setSettings={props.setSettings}
         onTableClick={onTableClick}
         activeMarker={activeMarker}
+        onGoToClick={onGoToClick}
       />
     </>
   )

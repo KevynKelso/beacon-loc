@@ -6,6 +6,7 @@ from config import NUM_LISTENERS
 from test_case_1 import test_case_1
 from test_case_2 import test_case_2
 from test_case_3 import test_case_3
+from test_case_4 import test_case_4
 
 from utils import (create_publish_data, get_random_element_from_list,
                    get_random_mac, random_coords_close_to_home)
@@ -41,7 +42,8 @@ def main():
 
     # test_case_1(client)
     # test_case_2(client)
-    test_case_3(client)
+    # test_case_3(client)
+    test_case_4(client)
 
 
 if __name__ == "__main__":

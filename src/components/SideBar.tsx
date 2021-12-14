@@ -10,6 +10,7 @@ import { ISettings } from './SettingsModal'
 import SideBarTableElement from './SideBarTableElement'
 
 interface SideBarProps {
+  onGoToClick: (d: DetectedBridge) => void
   activeMarker: number
   bridges: DetectedBridge[]
   className?: string
@@ -35,7 +36,7 @@ export default function SideBar(props: SideBarProps) {
 
   return (
     <div className={props.className} >
-      <div className={showBridges ? "shadow-md absolute bg-em-dark" : "absolute"}>
+      <div className={showBridges ? "shadow-md absolute bg-gray-100" : "absolute"}>
         <div className="flex m-3">
           <Button
             onClick={() => setShowBridges(!showBridges)}
@@ -48,11 +49,11 @@ export default function SideBar(props: SideBarProps) {
         </div>
         {showBridges &&
           <div className="m-3">
-            <p className="text-white text-2xl">Detected bridges</p>
+            <p className="text-em-primary text-2xl font-bold">DETECTED BRIDGES</p>
             {props.bridges.length > 0 ?
               <div>
                 <div className="max-h-96 overflow-y-scroll">
-                  <Table striped borderless hover className='bg-em-primary whitespace-nowrap max-w-1/3'>
+                  <Table striped borderless hover className='bg-em-primary whitespace-nowrap w-64'>
                     <thead className="sticky top-0 bg-prussian-blue text-white">
                       <tr>
                         <th>Bridge</th>
@@ -70,6 +71,7 @@ export default function SideBar(props: SideBarProps) {
                               idx={idx}
                               key={`sidebartable-${idx}`}
                               onClick={() => props.onTableClick(d)}
+                              onGoToClick={props.onGoToClick}
                             />
                           )
                         }
@@ -82,7 +84,7 @@ export default function SideBar(props: SideBarProps) {
                     : null
                 }
               </div>
-              : <p className="text-white">No bridges publishing</p>
+              : <p className="text-em-primary">No messages in the last hour</p>
             }
             <FiltersBar
               availableBeacons={["test", "tes"]}

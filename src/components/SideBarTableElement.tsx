@@ -14,13 +14,14 @@ interface SideBarTableElementProps {
   bridge: DetectedBridge
   idx: number
   onClick: () => void
+  onGoToClick: (d: DetectedBridge) => void
 }
 
 export default function SideBarTableElement(props: SideBarTableElementProps) {
   const [copied, setCopied] = useState<boolean>(false)
 
   const truncatedName: string = props.bridge.bridgeName.substring(0, 15)
-  const rowClasses: string = props.idx % 2 ? "text-white" : "bg-em-secondary text-white"
+  const rowClasses: string = props.idx % 2 ? "text-white dark-sky-blue-hover" : "dark-sky-blue-hover bg-em-secondary text-white"
 
   function onCopyButtonClick() {
     navigator.clipboard.writeText(`${props.bridge.coordinates[0]},${props.bridge.coordinates[1]}`)
@@ -35,12 +36,22 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
       show={props.idx === props.activeMarker}
       overlay={
         <Popover>
-          <Popover.Header>
-            <h6 className="mb-0"><strong>Bridge:</strong> {props.bridge.bridgeName}</h6>
+          <Popover.Header className="bg-em-primary">
+            <h6 className="mb-0 text-white"><strong>Bridge:</strong> {props.bridge.bridgeName}</h6>
           </Popover.Header>
           <Popover.Body>
-            <p className="font-bold">Devices: {props.bridge.beacons?.length || 0}</p>
-            <div className="max-h-96 overflow-y-scroll" onScroll={(e) => console.log(e)}>
+            <div className="flex">
+              <p className="font-bold flex-grow">Devices: {props.bridge.beacons?.length || 0}</p>
+              <Button
+                className="self-start border-none bg-em-primary text-white"
+                variant="primary"
+                onClick={() => props.onGoToClick(props.bridge)}
+                size="sm"
+              >
+                Go to location
+              </Button>
+            </div>
+            <div className="mt-2 max-h-96 overflow-y-scroll">
               <Table striped borderless hover>
                 <thead className="sticky top-0 bg-white">
                   <tr>
@@ -91,7 +102,7 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
         className={props.activeMarker === props.idx ? "bg-dark-sky-blue" : rowClasses}
       >
         <td
-          className={props.activeMarker === props.idx ? "text-gray-100" : "underline text-blue-400"}
+          className={props.activeMarker === props.idx ? "text-white" : "underline text-white"}
         >
           {truncatedName}
         </td>

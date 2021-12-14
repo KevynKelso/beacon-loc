@@ -69,7 +69,6 @@ export function processRawMessage(
   updaterBridges: DetectedBridgeUpdater,
   updaterDevices: PublishedDeviceUpdater,
 ) {
-  console.log(message)
   separateDevicesTooFarAway(message, devices, settings, updaterBridges, updaterDevices)
 
   // check if beaconMac is in devices
@@ -115,7 +114,6 @@ export function recalculate(
   updaterBridges: DetectedBridgeUpdater,
   updaterDevices: PublishedDeviceUpdater
 ) {
-  console.log(records)
   // reset devices and bridges
   updaterBridges([])
   updaterDevices([])
@@ -139,7 +137,6 @@ export function recalculate(
   records.forEach((record: Record<string, any>) => {
     // need to build the array of publishedDevices first, then set the state
     const device: PublishedDevice | undefined = validateDBRecord(record)
-    console.log(device)
     if (!device) return
     processRawMessage(
       newPublishedDevices, device, settings,
@@ -148,7 +145,6 @@ export function recalculate(
   })
 
   // reset react state
-  console.log(newPublishedDevices)
   updaterBridges(newBridges)
   updaterDevices(newPublishedDevices)
 }
