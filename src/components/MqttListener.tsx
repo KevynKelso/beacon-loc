@@ -116,7 +116,6 @@ export default function MqttListener() {
     if (!receivedMessage) return
 
     insertToDb(receivedMessage)
-    console.log(receivedMessage)
 
     processRawMessage(
       publishedDevices, receivedMessage, settings,

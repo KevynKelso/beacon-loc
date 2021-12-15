@@ -64,7 +64,6 @@ const BeaconMap = compose(
       return
     }
 
-    //setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
     setActiveMarker(activeMarkerToSet)
   }
 

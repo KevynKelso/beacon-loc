@@ -71,13 +71,12 @@ export function processRawMessage(
 ) {
   separateDevicesTooFarAway(message, devices, settings, updaterBridges, updaterDevices)
 
-  // check if beaconMac is in devices
+  // check if beaconMac is in devices, if it is not, add it
   if (!devices.some((e: PublishedDevice) => e.beaconMac === message.beaconMac)) {
     return pushDevicesUpdate(message, devices, -1, true, updaterBridges, updaterDevices)
   }
 
-  // from this point on, beacon is in devices already (we've seen it
-  // before)
+  // from this point on, beacon is in devices already (we've seen it before)
   const index: number = devices.map(e => e.beaconMac).indexOf(message.beaconMac)
 
   // it is definitely at this listener if this is the case
@@ -85,27 +84,29 @@ export function processRawMessage(
     return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
   }
 
+  // get existing device in the PublishedDevices
   const publishedDevice: PublishedDevice = devices[index]
-
-  // receive an update from the same device we've seen before
-  if (message.bridgeName === publishedDevice.bridgeName) {
-    return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
-  }
 
   // larger rssi's take priority
   if (message.rssi > publishedDevice.rssi) {
     return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
   }
 
+  // receive an update from the same bridge we've seen before
+  if (message.bridgeName === publishedDevice.bridgeName) {
+    return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
+  }
+
   // check if it's too old of information, if it is, we update with new info
   const currentTime: number = getCurrentTimestamp()
-  if (publishedDevice.timestamp + settings.localTimeout < currentTime) {
+  if (+publishedDevice.timestamp + +settings.localTimeout < currentTime) {
     return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
   }
 
   // we see the beacon, but it is not here
   devices[index].seenTimestamp = message.timestamp
   updaterDevices(devices)
+  updaterBridges(convertDevicesToBridges(devices))
 }
 
 export function recalculate(

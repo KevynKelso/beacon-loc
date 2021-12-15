@@ -11,7 +11,7 @@ from utils import create_publish_data
 # configure
 max_dist = 0.022  # approx 1km?
 test_time = 10  # test will run for 10 seconds
-local_beacons = 1
+local_beacons = 3
 TIME_BETWEEN_MSG = 1
 warehouse_lat = HOME_LAT
 warehouse_lon = HOME_LON + max_dist
@@ -34,7 +34,6 @@ def warehouse_bridge(client):
             )
             client.publish("test", json.dumps(data))
             time.sleep(TIME_BETWEEN_MSG)
-    print("warehouse_bridge exit")
 
 
 def truck_bridge(client):
@@ -72,7 +71,6 @@ def truck_bridge(client):
                 )
                 client.publish("test", json.dumps(data))
             time.sleep(TIME_BETWEEN_MSG)
-    print("truck_bridge exit")
 
 
 def site_bridge(client):
@@ -85,16 +83,13 @@ def site_bridge(client):
         for i in range(local_beacons):
             data = create_publish_data(lat, lon, ts, "Site", f"t-4_b-site-{i}", rssi)
             client.publish("test", json.dumps(data))
-            time.sleep(TIME_BETWEEN_MSG / 3)
-    print("site_bridge exit")
+            time.sleep(TIME_BETWEEN_MSG)
 
 
 def test_case_4(client):
     print("Running test 4 (3 bridges moving)")
-    thread_funcs = [warehouse_bridge, site_bridge, truck_bridge]
+    thread_funcs = [site_bridge, truck_bridge, warehouse_bridge]
 
     for thread_func in thread_funcs:
         x = threading.Thread(target=thread_func, args=(client,))
         x.start()
-
-    print("main exit")
