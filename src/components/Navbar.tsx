@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button'
 import SettingsModal, { ISettings } from './SettingsModal'
 
 interface NavbarProps {
+  showBridges: boolean
   setSettings: (settings: ISettings) => void
   className?: string
 }
@@ -14,9 +15,11 @@ export default function Navbar(props: NavbarProps) {
   const [showSettingsModal, setShowSettingsModal] = useState(false)
 
   const { connectionStatus } = useMqttState();
-  const settingsButtonColor: string =
-    connectionStatus === "Connecting" ? "outline-warning" :
-      connectionStatus === "Connected" ? "outline-success" : "outline-danger"
+  let settingsButtonColor: string = props.showBridges ? "outline-danger" : "danger"
+  if (connectionStatus === "Connected" && !props.showBridges) settingsButtonColor = "success"
+  if (connectionStatus === "Connected" && props.showBridges) settingsButtonColor = "outline-success"
+  if (connectionStatus === "Connecting" && !props.showBridges) settingsButtonColor = "warning"
+  if (connectionStatus === "Connecting" && props.showBridges) settingsButtonColor = "outline-warning"
 
   function openSettingsModal(e: React.MouseEvent): void {
     e.preventDefault()

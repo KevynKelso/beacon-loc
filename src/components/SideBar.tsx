@@ -45,7 +45,11 @@ export default function SideBar(props: SideBarProps) {
           >
             {showBridges ? "Hide detected bridges" : "Show detected bridges"}
           </Button>
-          <NavBar className="ml-2" setSettings={props.setSettings} />
+          <NavBar
+            className="ml-2"
+            setSettings={props.setSettings}
+            showBridges={showBridges}
+          />
         </div>
         {showBridges &&
           <div className="m-3">
@@ -53,7 +57,7 @@ export default function SideBar(props: SideBarProps) {
             {props.bridges.length > 0 ?
               <div>
                 <div className="max-h-96 overflow-y-scroll">
-                  <Table striped borderless hover className='bg-em-primary whitespace-nowrap w-64'>
+                  <Table striped borderless hover className='mt-3 bg-em-primary whitespace-nowrap w-64'>
                     <thead className="sticky top-0 bg-prussian-blue text-white">
                       <tr>
                         <th>Bridge</th>
