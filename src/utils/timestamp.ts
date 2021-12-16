@@ -13,7 +13,7 @@ export function getCurrentTimestamp(hourOffset?: number): number {
 export function formatTimestamp(ts: number): string {
   if (ts === 0) return "The big bang"
   if (ts.toString().length !== 14) {
-    console.error("invalid timestamp", ts.toString().length)
+    console.warn("invalid timestamp", ts.toString().length)
     return "unknown"
   }
   // expecting timestamps in the form "20211119145525"

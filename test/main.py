@@ -1,8 +1,14 @@
 import datetime
+import os
 import random
 
-import paho.mqtt.client as mqtt
+from dotenv import load_dotenv
+
+load_dotenv()
+
+import paho.mqtt.client as paho
 from config import NUM_LISTENERS
+from paho import mqtt
 from test_case_1 import test_case_1
 from test_case_2 import test_case_2
 from test_case_3 import test_case_3
@@ -34,18 +40,23 @@ def on_message(client, userdata, msg):
 
 
 def main():
-    client = mqtt.Client()
+    client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect("localhost", 1883, 60)
+    client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
+    print(os.environ["TEST_HOST"], int(os.environ["REACT_APP_MQTTPORT"]))
+    client.username_pw_set(
+        os.environ["REACT_APP_MQTTUSERNAME"], os.environ["REACT_APP_MQTTPASSWORD"]
+    )
+    client.connect(os.environ["TEST_HOST"], int(os.environ["TEST_PORT"]))
     client.subscribe("test")
 
-    # test_case_1(client)
+    test_case_1(client)
     # test_case_2(client)
     # test_case_3(client)
     # test_case_4(client)
-    test_case_5(client)
+    # test_case_5(client)
 
 
 if __name__ == "__main__":

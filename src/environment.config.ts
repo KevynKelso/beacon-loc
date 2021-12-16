@@ -1,4 +1,5 @@
 export default function Environment() {
+  const environmentType = process.env.REACT_APP_ENVIRONMENT || "production"
   const googleMapsApiKey = process.env.REACT_APP_GOOGLEMAPSAPIKEY || ""
   const mqttBrokerUrl = process.env.REACT_APP_MQTTBROKERURL || ""
   const mqttPassword = process.env.REACT_APP_MQTTPASSWORD || ""
@@ -6,6 +7,7 @@ export default function Environment() {
   const mqttUsername = process.env.REACT_APP_MQTTUSERNAME || ""
 
   const environment = {
+    environmentType: environmentType,
     googleMapsApiKey: googleMapsApiKey,
     mqttBrokerUrl: mqttBrokerUrl,
     mqttPassword: mqttPassword,

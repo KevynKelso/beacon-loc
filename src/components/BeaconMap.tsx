@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { compose, withProps } from "recompose"
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
@@ -16,8 +16,7 @@ interface MapCoords {
   lat: number
   lng: number
 }
-//const mapsAPIKey: string = Environment().googleMapsApiKey
-const mapsAPIKey: string = ""
+const mapsAPIKey: string = Environment().environmentType === "production" ? Environment().googleMapsApiKey : ""
 
 const BeaconMap = compose(
   withProps({
@@ -30,8 +29,9 @@ const BeaconMap = compose(
   withGoogleMap
 )((props: any) => {
   const [filters, setFilters] = useState<Filters>({ beacons: [], bridges: [] })
-  const [mapCenter, setMapCenter] = useState<MapCoords>({ lat: 38.912378, lng: -104.819766 })
+  const [mapCenter, setMapCenter] = useState<MapCoords>()
   const [activeMarker, setActiveMarker] = useState<number>(-1)
+
 
   function onMarkerClick(index: number) {
     if (index === activeMarker) {
@@ -74,6 +74,14 @@ const BeaconMap = compose(
   function onMapClick() {
     setActiveMarker(-1)
   }
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position: GeolocationPosition) =>
+          setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude })
+      )
+    }
+  }, [])
 
   return (
     <>

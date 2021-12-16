@@ -1,8 +1,9 @@
 import { PublishedDevice } from '../components/MqttListener'
+import { getCurrentTimestamp } from '../utils/timestamp'
 
 export function validateDBRecord(record: Record<string, any>): PublishedDevice | undefined {
   if (!record?.bridgelat || !record?.bridgelon || !record?.ts || !record?.bridgename || !record?.beaconmac || !record?.rssi) {
-    console.error("Database contains invalid data", record)
+    console.warn("Database contains invalid data", record)
     return
   }
 
@@ -19,10 +20,12 @@ export function validateDBRecord(record: Record<string, any>): PublishedDevice |
 }
 
 export function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
-  const message = JSON.parse(JSONMessage)
+  let message = JSON.parse(JSONMessage)
 
-  if (!message || !message.bridgeCoordinates || !message.timestamp ||
-    !message.bridgeName || !message.beaconMac || typeof message.rssi === "undefined") {
+  if (!message.timestamp) message.timestamp = getCurrentTimestamp()
+
+  if (!message || !message.bridgeCoordinates || !message.bridgeName ||
+    !message.beaconMac || typeof message.rssi === "undefined") {
     console.warn("Mqtt message is not of type MqttBridgePublish", message)
     return
   }

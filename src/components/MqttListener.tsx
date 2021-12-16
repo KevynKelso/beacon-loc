@@ -82,7 +82,7 @@ export default function MqttListener() {
     try {
       await db('RAW MQTT').insert(dbEntry).one(); // Inserts, updates, and deletes will refresh the `frame` below
     } catch (e) {
-      console.error(e)
+      console.warn(e)
     }
   }
 
