@@ -6,9 +6,7 @@ export const mountainMeadow: string = "9, 188, 138"
 export const lostRed: string = "112, 43, 44"
 
 const emPrimary: string = "22, 118, 163"
-const emDark: string = "52, 58, 64"
 const emSecondary: string = "0, 64, 94"
-const green: string = ""
 
 export default function markerIcon(
   name: string,
@@ -26,7 +24,6 @@ export default function markerIcon(
 
   const totalWidth = nameBoxWidth + numberBoxWidth
 
-  //const notActiveColor = isNaN(+truncatedName) ? emSecondary : lostRed
   const notActiveColor = !name.toLocaleLowerCase().includes("out of range") ? emSecondary : lostRed
 
   const fillColor: string = active ? darkSkyBlue : notActiveColor

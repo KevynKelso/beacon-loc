@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
+import Spinner from 'react-bootstrap/Spinner'
+
 import { compose, withProps } from "recompose"
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps"
 
@@ -21,7 +23,7 @@ const mapsAPIKey: string = Environment().environmentType === "production" ? Envi
 const BeaconMap = compose(
   withProps({
     googleMapURL: `https://maps.googleapis.com/maps/api/js?key=${mapsAPIKey}&v=3.exp`,
-    loadingElement: <div />,
+    loadingElement: <Spinner animation="border" role="status"> <span className="visually-hidden">Loading...</span> </Spinner>,
     containerElement: <div />,
     mapElement: <div className="static" />,
   }),
@@ -31,6 +33,7 @@ const BeaconMap = compose(
   const [filters, setFilters] = useState<Filters>({ beacons: [], bridges: [] })
   const [mapCenter, setMapCenter] = useState<MapCoords>()
   const [activeMarker, setActiveMarker] = useState<number>(-1)
+  const [firstLoad, setFirstLoad] = useState<boolean>(true)
 
 
   function onMarkerClick(index: number) {
@@ -45,7 +48,7 @@ const BeaconMap = compose(
       const visible: boolean = filters.bridges.indexOf(d.bridgeName) === -1
       return (
         <Marker
-          title={`Bridge: ${d.bridgeName}`}
+          title={`Bridge: ${d.bridgeName}; Beacons: ${d.beacons?.length || 0}`}
           key={`${d.bridgeName}${idx}`}
           position={{ lat: d.coordinates[0], lng: d.coordinates[1] }}
           icon={markerIcon(d.bridgeName, d.beacons?.length || 0, activeMarker === idx)}
@@ -75,11 +78,12 @@ const BeaconMap = compose(
     setActiveMarker(-1)
   }
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (navigator.geolocation && firstLoad) {
       navigator.geolocation.getCurrentPosition(
         (position: GeolocationPosition) =>
           setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude })
       )
+      setFirstLoad(false)
     }
   }, [])
 

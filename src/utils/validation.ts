@@ -30,7 +30,7 @@ export function validateMqttMessage(JSONMessage: string): PublishedDevice | unde
     return
   }
 
-  if (message.bridgeCoordinates.length != 2) {
+  if (message.bridgeCoordinates.length !== 2) {
     console.warn("Invalid coordinates", message.bridgeCoordinates)
     return
   }
