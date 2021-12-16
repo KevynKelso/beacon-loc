@@ -11,7 +11,15 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 function App() {
 
   return (
-    <Connector brokerUrl={Environment().mqttBrokerUrl} options={{ keepalive: 0 }}>
+    <Connector
+      brokerUrl={Environment().mqttBrokerUrl}
+      options={{
+        keepalive: 0,
+        port: Environment().mqttPort,
+        username: Environment().mqttUsername,
+        password: Environment().mqttPassword,
+      }}
+    >
       <EasybaseProvider ebconfig={ebconfig}>
         <MqttListener />
       </EasybaseProvider>

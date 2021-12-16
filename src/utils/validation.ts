@@ -22,13 +22,13 @@ export function validateMqttMessage(JSONMessage: string): PublishedDevice | unde
   const message = JSON.parse(JSONMessage)
 
   if (!message || !message.bridgeCoordinates || !message.timestamp ||
-    !message.bridgeName || !message.beaconMac || !message.rssi) {
-    console.error("Mqtt message is not of type MqttBridgePublish", message)
+    !message.bridgeName || !message.beaconMac || typeof message.rssi === "undefined") {
+    console.warn("Mqtt message is not of type MqttBridgePublish", message)
     return
   }
 
   if (message.bridgeCoordinates.length != 2) {
-    console.error("Invalid coordinates", message.bridgeCoordinates)
+    console.warn("Invalid coordinates", message.bridgeCoordinates)
     return
   }
 
