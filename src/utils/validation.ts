@@ -2,7 +2,12 @@ import { PublishedDevice } from '../components/MqttListener'
 import { getCurrentTimestamp } from '../utils/timestamp'
 
 export function validateDBRecord(record: Record<string, any>): PublishedDevice | undefined {
-  if (!record?.bridgelat || !record?.bridgelon || !record?.ts || !record?.bridgename || !record?.beaconmac || !record?.rssi) {
+  if (
+    typeof record?.bridgelat === "undefined" ||
+    typeof record?.bridgelon === "undefined" ||
+    typeof record?.rssi === "undefined" ||
+    !record?.ts || !record?.bridgename || !record?.beaconmac
+  ) {
     console.warn("Database contains invalid data", record)
     return
   }

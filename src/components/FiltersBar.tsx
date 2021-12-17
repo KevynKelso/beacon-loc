@@ -36,7 +36,7 @@ export default function FiltersBar(props: FiltersBarProps) {
   }
 
   return (
-    <div className="flex mt-3">
+    <div>
       {/*{
         props.availableBeacons?.length ?
           <>

@@ -19,6 +19,7 @@ interface SideBarProps {
   onTableClick: (d: DetectedBridge) => void
   setFilters: (filters: Filters) => void
   setSettings: (settings: ISettings) => void
+  setMapCenterMyLocation: () => void
 }
 
 export default function SideBar(props: SideBarProps) {
@@ -36,14 +37,14 @@ export default function SideBar(props: SideBarProps) {
 
   return (
     <div className={props.className} >
-      <div className={showBridges ? "shadow-md absolute bg-gray-100" : "absolute"}>
-        <div className="flex m-3">
+      <div className={showBridges ? "p-3 shadow-md absolute bg-gray-100" : "p-3 absolute"}>
+        <div className="flex">
           <Button
             onClick={() => setShowBridges(!showBridges)}
             className={showBridges ? "" : "bg-em-primary border-none"}
             variant={showBridges ? "secondary" : "primary"}
           >
-            {showBridges ? "Hide detected bridges" : "Show detected bridges"}
+            {showBridges ? "Hide table view" : "Show table view"}
           </Button>
           <NavBar
             className="ml-2"
@@ -90,12 +91,21 @@ export default function SideBar(props: SideBarProps) {
               </div>
               : <p className="text-em-primary">No messages in the last hour</p>
             }
-            <FiltersBar
-              availableBeacons={["test", "tes"]}
-              availableBridges={props.bridges.map((d: DetectedBridge) => d.bridgeName)}
-              updateFilters={updateFilters}
-              existingFilters={props.filters}
-            />
+            <div className="flex mt-3">
+              <FiltersBar
+                availableBeacons={["test", "tes"]}
+                availableBridges={props.bridges.map((d: DetectedBridge) => d.bridgeName)}
+                updateFilters={updateFilters}
+                existingFilters={props.filters}
+              />
+              <Button
+                onClick={() => props.setMapCenterMyLocation()}
+                className="bg-em-primary border-none ml-2"
+                variant="primary"
+              >
+                Center on me
+              </Button>
+            </div>
           </div>
         }
       </div>

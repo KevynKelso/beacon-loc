@@ -70,22 +70,33 @@ const BeaconMap = compose(
     setActiveMarker(activeMarkerToSet)
   }
 
+  // button in popover for going to bridge location
   function onGoToClick(d: DetectedBridge) {
     setMapCenter({ lat: d.coordinates[0], lng: d.coordinates[1] })
   }
 
+  // deselect marker when you click on the map
   function onMapClick() {
     setActiveMarker(-1)
   }
-  useEffect(() => {
-    if (navigator.geolocation && firstLoad) {
+
+  function setMapCenterMyLocation() {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position: GeolocationPosition) =>
+        (position: GeolocationPosition) => {
           setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude })
+        }
       )
+    }
+  }
+
+  // center the map on your location when client connects
+  useEffect(() => {
+    if (firstLoad) {
+      setMapCenterMyLocation()
       setFirstLoad(false)
     }
-  }, [])
+  }, [firstLoad])
 
   return (
     <>
@@ -107,6 +118,7 @@ const BeaconMap = compose(
         onTableClick={onTableClick}
         activeMarker={activeMarker}
         onGoToClick={onGoToClick}
+        setMapCenterMyLocation={setMapCenterMyLocation}
       />
     </>
   )
