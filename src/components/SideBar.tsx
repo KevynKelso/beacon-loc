@@ -6,20 +6,22 @@ import Table from 'react-bootstrap/Table'
 import FiltersBar, { Filters, BridgeOrBeacon } from './FiltersBar'
 import NavBar from './Navbar'
 import { DetectedBridge } from './MqttListener'
-import { ISettings } from './SettingsModal'
+import { ISettings } from './settings/SettingsModal'
 import SideBarTableElement from './SideBarTableElement'
+import { MapCoords } from './BeaconMap'
 
 interface SideBarProps {
-  onGoToClick: (d: DetectedBridge) => void
   activeMarker: number
   bridges: DetectedBridge[]
   className?: string
   detectedDevicesSum?: number
   filters: Filters
+  myLocation?: MapCoords
+  onGoToClick: (d: DetectedBridge) => void
   onTableClick: (d: DetectedBridge) => void
   setFilters: (filters: Filters) => void
-  setSettings: (settings: ISettings) => void
   setMapCenterMyLocation: () => void
+  setSettings: (settings: ISettings) => void
 }
 
 export default function SideBar(props: SideBarProps) {
@@ -50,10 +52,11 @@ export default function SideBar(props: SideBarProps) {
             className="ml-2"
             setSettings={props.setSettings}
             showBridges={showBridges}
+            myLocation={props.myLocation}
           />
         </div>
         {showBridges &&
-          <div className="m-3">
+          <div className="mt-3">
             <p className="text-em-primary text-2xl font-bold">DETECTED BRIDGES</p>
             {props.bridges.length > 0 ?
               <div>

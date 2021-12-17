@@ -3,12 +3,14 @@ import React, { useState } from "react";
 import { useMqttState } from 'mqtt-react-hooks';
 
 import Button from 'react-bootstrap/Button'
-import SettingsModal, { ISettings } from './SettingsModal'
+import SettingsModal, { ISettings } from './settings/SettingsModal'
+import { MapCoords } from './BeaconMap'
 
 interface NavbarProps {
-  showBridges: boolean
-  setSettings: (settings: ISettings) => void
   className?: string
+  myLocation?: MapCoords
+  setSettings: (settings: ISettings) => void
+  showBridges: boolean
 }
 
 export default function Navbar(props: NavbarProps) {
@@ -35,11 +37,11 @@ export default function Navbar(props: NavbarProps) {
         Settings
       </Button>
       <SettingsModal
+        myLocation={props.myLocation}
         setSettings={props.setSettings}
         setShow={setShowSettingsModal}
         show={showSettingsModal}
-      >
-      </SettingsModal>
+      />
     </div >
   );
 }

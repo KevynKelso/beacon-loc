@@ -1,6 +1,6 @@
 import { getCurrentTimestamp } from './timestamp'
 import { PublishedDevice, DetectedBridge, PublishedDeviceUpdater, DetectedBridgeUpdater } from '../components/MqttListener'
-import { ISettings } from '../components/SettingsModal'
+import { ISettings } from '../components/settings/SettingsModal'
 import { convertDevicesToBridges } from './devices'
 import { validateDBRecord } from './validation'
 

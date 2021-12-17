@@ -36,49 +36,23 @@ export default function FiltersBar(props: FiltersBarProps) {
   }
 
   return (
-    <div>
-      {/*{
-        props.availableBeacons?.length ?
-          <>
-            <Button
-              onClick={(e) => openFilterBeaconsModal(e)}
-              variant="primary"
-            >
-              {filterBeaconsTitle}
-            </Button>
-            <FiltersModal
-              existingFilters={props.existingFilters.beacons}
-              availableItems={props.availableBeacons}
-              setFilters={(elements: string[]) => props.updateFilters('BEACON', elements)}
-              setShow={setShowFilterBeaconsModal}
-              show={showFilterBeaconsModal}
-              title={filterBeaconsTitle}
-            />
-          </>
-          : null
-      }
-        */}
-      {props.availableBridges?.length ?
-        <>
-          <Button
-            onClick={(e) => openFilterBridgesModal(e)}
-            //className='ml-2'
-            className="bg-em-primary border-none"
-            variant="primary"
-          >
-            {filterBridgesTitle}
-          </Button>
-          <FiltersModal
-            availableItems={props.availableBridges}
-            //existingFilters={props.existingFilters.bridges}
-            setFilters={(elements: string[]) => props.updateFilters('BRIDGE', elements)}
-            setShow={setShowFilterBridgesModal}
-            show={showFilterBridgesModal}
-            title={filterBridgesTitle}
-          />
-        </>
-        : null
-      }
-    </div>
+    <>
+      <Button
+        onClick={(e) => openFilterBridgesModal(e)}
+        //className='ml-2'
+        className="bg-em-primary border-none"
+        variant="primary"
+      >
+        {filterBridgesTitle}
+      </Button>
+      <FiltersModal
+        availableItems={props.availableBridges || []}
+        //existingFilters={props.existingFilters.bridges}
+        setFilters={(elements: string[]) => props.updateFilters('BRIDGE', elements)}
+        setShow={setShowFilterBridgesModal}
+        show={showFilterBridgesModal}
+        title={filterBridgesTitle}
+      />
+    </>
   );
 }

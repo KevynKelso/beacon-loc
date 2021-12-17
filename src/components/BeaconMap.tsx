@@ -14,7 +14,7 @@ import { DetectedBridge } from './MqttListener'
 import { Filters } from './FiltersBar'
 
 
-interface MapCoords {
+export interface MapCoords {
   lat: number
   lng: number
 }
@@ -119,6 +119,7 @@ const BeaconMap = compose(
         activeMarker={activeMarker}
         onGoToClick={onGoToClick}
         setMapCenterMyLocation={setMapCenterMyLocation}
+        myLocation={mapCenter}
       />
     </>
   )

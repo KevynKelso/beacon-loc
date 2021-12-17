@@ -4,7 +4,7 @@ import { useEasybase } from 'easybase-react'
 
 import BeaconMap from './BeaconMap'
 
-import { ISettings, DefaultSettings } from './SettingsModal'
+import { ISettings, DefaultSettings } from './settings/SettingsModal'
 import { getCurrentTimestamp } from '../utils/timestamp'
 import { processRawMessage, recalculate } from '../utils/messageProcessing'
 import { validateMqttMessage } from '../utils/validation'
