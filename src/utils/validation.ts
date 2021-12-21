@@ -25,7 +25,16 @@ export function validateDBRecord(record: Record<string, any>): PublishedDevice |
 }
 
 export function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
-  let message = JSON.parse(JSONMessage)
+  let message
+  try {
+    message = JSON.parse(JSONMessage)
+    if (!message) throw new Error("No message")
+  }
+  catch (e) {
+    console.warn(e)
+    console.warn("invalid message", JSONMessage)
+    return
+  }
 
   if (!message.timestamp) message.timestamp = getCurrentTimestamp()
 

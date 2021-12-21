@@ -18,6 +18,7 @@ export interface MapCoords {
   lat: number
   lng: number
 }
+
 const mapsAPIKey: string = Environment().environmentType === "production" ? Environment().googleMapsApiKey : ""
 
 const BeaconMap = compose(
