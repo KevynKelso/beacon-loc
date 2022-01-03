@@ -53,16 +53,17 @@ export default function SettingsTopicLocations({ myLocation }: SettingsTopicLoca
 
   return (
     <Form>
+      <h3 className="mt-4 text-red-500">This feature is still in development</h3>
       <h3 className="mt-4 text-em-primary">Topic locations</h3>
       <Form.Group className="ml-2" controlId="formTopicLocations">
         <Form.Label className="mt-3">Topic name: {topicLoc.name}</Form.Label>
-        <Form.Control onChange={onChangeTopicName} type="text" placeholder="Enter the topic name your bridge will publish to" />
+        <Form.Control disabled onChange={onChangeTopicName} type="text" placeholder="Enter the topic name your bridge will publish to" />
 
         <Form.Label className="mt-3">Topic latitude: {topicLoc.coords.lat} degrees</Form.Label>
-        <Form.Control type="number" onChange={onChangeTopicLat} />
+        <Form.Control disabled type="number" onChange={onChangeTopicLat} />
 
         <Form.Label className="mt-3">Topic longitude: {topicLoc.coords.lng} degrees</Form.Label>
-        <Form.Control type="number" onChange={onChangeTopicLng} />
+        <Form.Control disabled type="number" onChange={onChangeTopicLng} />
 
         <Form.Text className="text-muted">
           Topic locations are for bridges who don't have the capability to report their locations.
@@ -73,6 +74,7 @@ export default function SettingsTopicLocations({ myLocation }: SettingsTopicLoca
           className="mt-3 ml-2"
           variant="danger"
           size="sm"
+          disabled
         >
           Submit topic location
         </Button>
@@ -81,6 +83,7 @@ export default function SettingsTopicLocations({ myLocation }: SettingsTopicLoca
           className="mt-3 ml-2"
           variant="success"
           size="sm"
+          disabled
         >
           Show existing topic locations
         </Button>
