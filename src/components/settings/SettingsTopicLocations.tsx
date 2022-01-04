@@ -54,7 +54,7 @@ export default function SettingsTopicLocations({ myLocation }: SettingsTopicLoca
   return (
     <Form>
       <h3 className="mt-4 text-red-500">This feature is still in development</h3>
-      <h3 className="mt-4 text-em-primary">Topic locations</h3>
+      <h3 className="mt-4 text-em-primary text-2xl">Topic locations</h3>
       <Form.Group className="ml-2" controlId="formTopicLocations">
         <Form.Label className="mt-3">Topic name: {topicLoc.name}</Form.Label>
         <Form.Control disabled onChange={onChangeTopicName} type="text" placeholder="Enter the topic name your bridge will publish to" />

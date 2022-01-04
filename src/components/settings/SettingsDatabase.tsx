@@ -27,7 +27,7 @@ export default function SettingsDatabase({ sinceTime, setSinceTime }: SettingsDa
 
   return (
     <Form>
-      <h3 className="mt-4 text-em-primary">Database</h3>
+      <h3 className="mt-4 text-em-primary text-2xl">Database</h3>
       <Form.Group className="ml-2" controlId="formSinceTime">
         <Form.Label className="flex-grow">Messages since: {formatTimestamp(sinceTime)}</Form.Label>
         <Form.Control className="mt-1" type="date" value={formatTimestamp(sinceTime).split(' ')[0]} onChange={onChangeDate} />

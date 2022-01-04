@@ -54,7 +54,7 @@ export default function SettingsMessageProcessing({
 
   return (
     <Form>
-      <h3 className="mt-4 text-em-primary">Message processing</h3>
+      <h3 className="mt-4 text-em-primary text-2xl">Message processing</h3>
       <Form.Group className="ml-2" controlId="formLocalTimeout">
         <Form.Label>Local timeout: {localTimeout} seconds</Form.Label>
         <Form.Control type="number" onChange={onChangeLocalTimeout} />
