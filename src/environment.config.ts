@@ -4,6 +4,7 @@ export default function Environment() {
   const mqttBrokerUrl = process.env.REACT_APP_MQTTBROKERURL || ""
   const mqttPassword = process.env.REACT_APP_MQTTPASSWORD || ""
   const mqttPort = parseInt(process.env.REACT_APP_MQTTPORT || "")
+  const mqttTopic = process.env.REACT_APP_MQTTTOPIC || ""
   const mqttUsername = process.env.REACT_APP_MQTTUSERNAME || ""
 
   const environment = {
@@ -12,10 +13,12 @@ export default function Environment() {
     mqttBrokerUrl: mqttBrokerUrl,
     mqttPassword: mqttPassword,
     mqttPort: mqttPort,
+    mqttTopic: mqttTopic,
     mqttUsername: mqttUsername,
   }
 
-  if (!mqttPassword || !mqttBrokerUrl || !mqttUsername || !googleMapsApiKey || !mqttPort) {
+  if (!mqttPassword || !mqttBrokerUrl || !mqttUsername ||
+    !googleMapsApiKey || !mqttPort || !mqttTopic) {
     throw new Error("Missing environment variables")
   }
 

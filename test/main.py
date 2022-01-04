@@ -50,7 +50,7 @@ def main():
         os.environ["REACT_APP_MQTTUSERNAME"], os.environ["REACT_APP_MQTTPASSWORD"]
     )
     client.connect(os.environ["TEST_HOST"], int(os.environ["TEST_PORT"]))
-    client.subscribe("test")
+    client.subscribe("EM Beacon")
 
     test_case_1(client)
     # test_case_2(client)

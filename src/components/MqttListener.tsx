@@ -3,6 +3,7 @@ import { useSubscription } from 'mqtt-react-hooks'
 import { useEasybase } from 'easybase-react'
 
 import BeaconMap from './BeaconMap'
+import Environment from '../environment.config'
 
 import { ISettings, DefaultSettings } from './settings/SettingsModal'
 import { getCurrentTimestamp } from '../utils/timestamp'
@@ -59,7 +60,7 @@ export default function MqttListener() {
   const [startupQuery, setStartupQuery] = useState<boolean>(true)
 
   const { db, e } = useEasybase()
-  const { message } = useSubscription('test');
+  const { message } = useSubscription(Environment().mqttTopic);
 
   const fetchRecords = async (since: number) => {
     return await db("RAW MQTT")
