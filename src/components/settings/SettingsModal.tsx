@@ -13,6 +13,7 @@ import { MapCoords } from '../BeaconMap'
 
 import { getCurrentTimestamp } from '../../utils/timestamp'
 
+
 export interface ISettings {
   definitivelyHereRSSI: number  // dB
   globalTimeout: number         // seconds
@@ -51,6 +52,7 @@ export default function SettingsModal(props: SettingsModalProps) {
 
   // component state
   const [tab, setTab] = useState<number>(1)
+  const [showQR, setShowQR] = useState<boolean>(false)
 
   function onSubmitSettings() {
     const settings: ISettings = {
@@ -103,11 +105,22 @@ export default function SettingsModal(props: SettingsModalProps) {
         {tab === 3 &&
           <SettingsTopicLocations myLocation={props.myLocation} />
         }
-        <div className="grid mt-4">
+        <div className="flex mt-4">
+          <div className="flex-grow">
+            <Button className="bg-em-primary border-none justify-self-end" variant="primary" onClick={() => setShowQR(!showQR)}>
+              {showQR ? "Hide QR code" : "Show QR code"}
+            </Button>
+          </div>
           <Button className="bg-em-primary border-none justify-self-end" variant="primary" type="submit" onClick={onSubmitSettings}>
             Save and close
           </Button>
         </div>
+        {showQR &&
+          <div className="flex">
+            <img src='https://chart.googleapis.com/chart?cht=qr&chl=https%3A%2F%2Ffathomless-dawn-96149.herokuapp.com%2Fem-ble-bridge.apk&chs=180x180&choe=UTF-8&chld=L|2' alt='' />
+            <p className="mt-5 text-em-primary">Scan to download APK for EM-BLE-BRIDGE app</p>
+          </div>
+        }
       </Modal.Body>
     </Modal >
   );
