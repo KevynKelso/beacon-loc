@@ -1,25 +1,28 @@
-import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar"
-//@ts-ignore
-import GetStartedMD from './getStarted.md'
-import ReactMarkdown from 'react-markdown'
+import processRawMessageImg from "./processRawMessage.png"
+import separateDevicesTooFarAwayImg from "./separateDevicesTooFarAway.png"
+import convertDevicesToBridgesImg from "./convertDevicesToBridges.png"
 
 
 export default function Docs() {
-  const [markdown, setMarkdown] = useState<string>('')
-
-  useEffect(() => {
-    fetch(GetStartedMD).then(res => res.text()).then(text => setMarkdown(text));
-  }, [])
 
   return (
-    <div className="bg-gray-100 min-h-full flex pl-32 pr-32">
-      <Sidebar />
-      <div>
-        <ReactMarkdown>
-          {markdown}
-        </ReactMarkdown>
+    <>
+      <div className="h-max grid grid-cols-4 bg-gray-100 overflow-scroll pt-16 pl-16 pr-16">
+        <Sidebar />
+        <div className="col-span-3">
+          <div>
+            <img className="" src={processRawMessageImg} />
+          </div>
+          <div className="border-t border-em-primary">
+            <img className="mt-3 mb-3" src={separateDevicesTooFarAwayImg} />
+          </div>
+          <div className="border-t border-em-primary">
+            <img className="mt-3" src={convertDevicesToBridgesImg} />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
+
   );
 }
