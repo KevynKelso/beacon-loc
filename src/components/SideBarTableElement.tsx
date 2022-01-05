@@ -35,7 +35,7 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
       rootClose={true}
       show={props.idx === props.activeMarker}
       overlay={
-        <Popover>
+        <Popover className="max-w-1/3">
           <Popover.Header className="bg-em-primary">
             <h6 className="mb-0 text-white"><strong>Bridge:</strong> {props.bridge.bridgeName}</h6>
           </Popover.Header>
