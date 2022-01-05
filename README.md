@@ -42,4 +42,4 @@ for download in the public directory, or you can also scan the QR code from the
 settings page to download on an Android device.
 
 ### Architecture Overview
-![alt text](https://github.com/KevynKelso/beacon-loc/tree/main/src/docs/stack.png?raw=true)
+![alt text](https://github.com/KevynKelso/beacon-loc/blob/main/src/docs/stack.png?raw=true)
