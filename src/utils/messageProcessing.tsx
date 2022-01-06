@@ -4,23 +4,20 @@ import { ISettings } from '../components/settings/SettingsModal'
 import { convertDevicesToBridges } from './devices'
 import { validateDBRecord } from './validation'
 
+// util function for updating the array of devices
 function pushDevicesUpdate(
   device: PublishedDevice,
   devices: PublishedDevice[],
   index: number,
   isNewDevice: boolean,
-  updaterBridges: DetectedBridgeUpdater,
-  updaterDevices: PublishedDeviceUpdater,
-): void {
+): PublishedDevice[] {
   if (isNewDevice) {
-    updaterDevices([...devices, device])
-    updaterBridges(convertDevicesToBridges([...devices, device]))
-    return
+    return [...devices, device]
   }
 
   devices[index] = device
-  updaterDevices(devices)
-  updaterBridges(convertDevicesToBridges(devices))
+
+  return devices
 }
 
 // calculates pythagoean distance based on lat, lng coords, returns whether or
@@ -38,9 +35,9 @@ function separateDevicesTooFarAway(
   inDevice: PublishedDevice,
   devices: PublishedDevice[],
   settings: ISettings,
-  updaterBridges: DetectedBridgeUpdater,
-  updaterDevices: PublishedDeviceUpdater,
-) {
+  //updaterBridges: DetectedBridgeUpdater,
+  //updaterDevices: PublishedDeviceUpdater,
+): PublishedDevice[] {
   // find all the published devices associated w/ this received message listener
   const bridgeDevices: PublishedDevice[] | undefined =
     devices.filter(
@@ -50,18 +47,36 @@ function separateDevicesTooFarAway(
   if (bridgeDevices?.length) {
     bridgeDevices.forEach((d: PublishedDevice) => {
       if (isTooFarAway(settings.lostDistance, d, inDevice)) {
-        // this beacon is too far away from the listener and must be associated with it's
-        // own location
-        const newListenerName: string = `Out of range: ${d.bridgeName}`
+        // this beacon is too far away from the bridge and must be associated with it's
+        // own location, to do that we give it a new bridgeName
+        const newBridgeName: string = `Out of range: ${d.bridgeName}`
         const index: number = devices.map(e => e.beaconMac).indexOf(d.beaconMac)
         let newDevice: PublishedDevice = devices[index]
-        newDevice.bridgeName = newListenerName
-        pushDevicesUpdate(newDevice, devices, index, false, updaterBridges, updaterDevices)
+        newDevice.bridgeName = newBridgeName
+        devices = pushDevicesUpdate(newDevice, devices, index, false)
       }
     })
   }
+
+  return devices
 }
 
+// this function must only be called once in processRawMessage since the updater
+// bridges and devices are async state calls which get queued and may be processed
+// in an unpredictable order
+// https://reactjs.org/docs/state-and-lifecycle.html
+function updateReactState(
+  updaterBridges: DetectedBridgeUpdater,
+  updaterDevices: PublishedDeviceUpdater,
+  devices: PublishedDevice[]
+) {
+  updaterDevices(devices)
+  updaterBridges(convertDevicesToBridges(devices))
+}
+
+
+// this function is the main logic for determining where each beacon is.
+// see /docs/processRawMessage.png for a logic diagram
 export function processRawMessage(
   devices: PublishedDevice[],
   message: PublishedDevice,
@@ -69,11 +84,12 @@ export function processRawMessage(
   updaterBridges: DetectedBridgeUpdater,
   updaterDevices: PublishedDeviceUpdater,
 ) {
-  separateDevicesTooFarAway(message, devices, settings, updaterBridges, updaterDevices)
 
   // check if beaconMac is in devices, if it is not, add it
   if (!devices.some((e: PublishedDevice) => e.beaconMac === message.beaconMac)) {
-    return pushDevicesUpdate(message, devices, -1, true, updaterBridges, updaterDevices)
+    devices = pushDevicesUpdate(message, devices, -1, true)
+    devices = separateDevicesTooFarAway(message, devices, settings)
+    return updateReactState(updaterBridges, updaterDevices, devices)
   }
 
   // from this point on, beacon is in devices already (we've seen it before)
@@ -81,7 +97,9 @@ export function processRawMessage(
 
   // it is definitely at this listener if this is the case
   if (message.rssi >= settings.definitivelyHereRSSI) {
-    return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
+    devices = pushDevicesUpdate(message, devices, index, false)
+    devices = separateDevicesTooFarAway(message, devices, settings)
+    return updateReactState(updaterBridges, updaterDevices, devices)
   }
 
   // get existing device in the PublishedDevices
@@ -89,24 +107,31 @@ export function processRawMessage(
 
   // larger rssi's take priority
   if (message.rssi > publishedDevice.rssi) {
-    return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
+    devices = pushDevicesUpdate(message, devices, index, false)
+    devices = separateDevicesTooFarAway(message, devices, settings)
+    return updateReactState(updaterBridges, updaterDevices, devices)
   }
 
   // receive an update from the same bridge we've seen before
   if (message.bridgeName === publishedDevice.bridgeName) {
-    return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
+    devices = pushDevicesUpdate(message, devices, index, false)
+    devices = separateDevicesTooFarAway(message, devices, settings)
+    return updateReactState(updaterBridges, updaterDevices, devices)
   }
 
   // check if it's too old of information, if it is, we update with new info
   const currentTime: number = getCurrentTimestamp()
+  // TODO: we can't compare time this way
   if (+publishedDevice.timestamp + +settings.localTimeout < currentTime) {
-    return pushDevicesUpdate(message, devices, index, false, updaterBridges, updaterDevices)
+    devices = pushDevicesUpdate(message, devices, index, false)
+    devices = separateDevicesTooFarAway(message, devices, settings)
+    return updateReactState(updaterBridges, updaterDevices, devices)
   }
 
+  devices = separateDevicesTooFarAway(message, devices, settings)
   // we see the beacon, but it is not here
   devices[index].seenTimestamp = message.timestamp
-  updaterDevices(devices)
-  updaterBridges(convertDevicesToBridges(devices))
+  return updateReactState(updaterBridges, updaterDevices, devices)
 }
 
 export function recalculate(
@@ -115,10 +140,6 @@ export function recalculate(
   updaterBridges: DetectedBridgeUpdater,
   updaterDevices: PublishedDeviceUpdater
 ) {
-  // reset devices and bridges
-  updaterBridges([])
-  updaterDevices([])
-
   if (!records.length) return
 
   // variables for rebuilding state. We can't use existing state because we
@@ -149,29 +170,3 @@ export function recalculate(
   updaterBridges(newBridges)
   updaterDevices(newPublishedDevices)
 }
-
-//export function timeoutDevices(
-  //devices: PublishedDevice[],
-  //globalTimeout: number, // this must be in seconds
-  //updaterBridges: DetectedBridgeUpdater,
-  //updaterDevices: PublishedDeviceUpdater,
-//) {
-  //const currentTime: number = getCurrentTimestamp()
-  //let newPublishedDevices: PublishedDevice[] = []
-  ////let newBridges: DetectedBridge[] = []
-
-  //devices.forEach((device: PublishedDevice) => {
-    //// global timeout is in seconds, so should be able to determine if device
-    //// is timed out by subtracting current time - timestamp and seeing if it's
-    //// greater than the global timeout
-    //if (currentTime - device.seenTimestamp > globalTimeout) {
-      //let newDevice: PublishedDevice = device
-      //newDevice.timedOut = true
-      //newPublishedDevices = [...newPublishedDevices, newDevice]
-      //return
-    //}
-    //newPublishedDevices = [...newPublishedDevices, device]
-  //})
-
-
-

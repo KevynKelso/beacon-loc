@@ -11,9 +11,7 @@ export function getCurrentTimestamp(hourOffset?: number): number {
 }
 
 export function formatTimestamp(ts: number): string {
-  if (ts === 0) return "The big bang"
   if (ts.toString().length !== 14) {
-    console.warn("invalid timestamp", ts.toString().length)
     return "unknown"
   }
   // expecting timestamps in the form "20211119145525"
@@ -36,10 +34,10 @@ export function replaceDateInTs(date: string, ts: number): number {
   return parseInt(newTs, 10)
 }
 
-export function replaceTimeInTs(date: string, ts: number): number {
-  date = date.replaceAll(':', '')
+export function replaceTimeInTs(time: string, ts: number): number {
+  time = time.replaceAll(':', '')
   const tsString: string = ts.toString()
-  const newTs: string = tsString.replace(tsString.substring(8, 14), date)
+  const newTs: string = tsString.replace(tsString.substring(8, 14), time)
 
   return parseInt(newTs, 10)
 }

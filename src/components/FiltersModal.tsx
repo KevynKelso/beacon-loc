@@ -58,7 +58,7 @@ export default function FiltersModal(props: ModalProps) {
         <div className="flex flex-col max-h-96 overflow-scroll">
           <Form.Check
             className="place-self-center mt-2"
-            checked={selectAll}
+            defaultChecked={selectAll}
             label="Uncheck all"
             onClick={() => onClickCheckAll()}
             type="checkbox"

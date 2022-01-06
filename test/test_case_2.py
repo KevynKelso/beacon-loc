@@ -20,7 +20,7 @@ def test_case_2(client):
         data = create_publish_data(
             home_lat, HOME_LON, ts, listener_name, f"t-2_b-{i}", rssi
         )
-        client.publish("test", json.dumps(data))
+        client.publish("EM Beacon", json.dumps(data))
         time.sleep(0.1)
 
     # first move slight
@@ -29,7 +29,7 @@ def test_case_2(client):
     data = create_publish_data(
         home_lat + 0.0005, HOME_LON + 0.0005, ts, listener_name, "t-2_b-0", rssi
     )
-    client.publish("test", json.dumps(data))
+    client.publish("EM Beacon", json.dumps(data))
     time.sleep(1)
 
     # second move slight
@@ -38,7 +38,7 @@ def test_case_2(client):
     data = create_publish_data(
         home_lat, HOME_LON - 0.0005, ts, listener_name, "t-2_b-0", rssi
     )
-    client.publish("test", json.dumps(data))
+    client.publish("EM Beacon", json.dumps(data))
     time.sleep(1)
 
     # first move great
@@ -47,7 +47,7 @@ def test_case_2(client):
     data = create_publish_data(
         home_lat, HOME_LON + 0.012, ts, listener_name, "t-2_b-0", rssi
     )
-    client.publish("test", json.dumps(data))
+    client.publish("EM Beacon", json.dumps(data))
     time.sleep(1)
 
     # second move great
@@ -56,7 +56,7 @@ def test_case_2(client):
     data = create_publish_data(
         home_lat, HOME_LON + 0.022, ts, listener_name, "t-2_b-0", rssi
     )
-    client.publish("test", json.dumps(data))
+    client.publish("EM Beacon", json.dumps(data))
     time.sleep(10)
 
     # move back
@@ -65,7 +65,7 @@ def test_case_2(client):
     data = create_publish_data(
         home_lat, HOME_LON + 0.012, ts, listener_name, "t-2_b-0", rssi
     )
-    client.publish("test", json.dumps(data))
+    client.publish("EM Beacon", json.dumps(data))
     time.sleep(1)
 
     for i in range(0, NUM_BEACONS):
@@ -74,5 +74,5 @@ def test_case_2(client):
         data = create_publish_data(
             home_lat - 0.001, HOME_LON, ts, listener_name, f"t-2_b-{i}", rssi
         )
-        client.publish("test", json.dumps(data))
+        client.publish("EM Beacon", json.dumps(data))
         time.sleep(0.1)

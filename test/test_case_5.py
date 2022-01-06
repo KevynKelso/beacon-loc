@@ -33,7 +33,7 @@ def randomly_stops_pub_bridge_thread(client):
                 f"t-5_{i}",
                 rssi,
             )
-            client.publish("test", json.dumps(data))
+            client.publish("EM Beacon", json.dumps(data))
             time.sleep(TIME_BETWEEN_MSG)
         # ~5% of the time, I will stop publishing for a random amount of time
         stopped = random.randint(1, 100) < 50
@@ -55,7 +55,7 @@ def z_bridge_thread(client):
                 f"t-5_{i}",
                 rssi,
             )
-            client.publish("test", json.dumps(data))
+            client.publish("EM Beacon", json.dumps(data))
             time.sleep(TIME_BETWEEN_MSG)
 
 
@@ -73,7 +73,7 @@ def main_publisher_bridge_thread(client):
                 f"t-5_{i}",
                 rssi,
             )
-            client.publish("test", json.dumps(data))
+            client.publish("EM Beacon", json.dumps(data))
             time.sleep(TIME_BETWEEN_MSG)
 
 

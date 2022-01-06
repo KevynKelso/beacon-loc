@@ -3,11 +3,14 @@ import { getCurrentTimestamp } from '../utils/timestamp'
 
 export function validateDBRecord(record: Record<string, any>): PublishedDevice | undefined {
   if (
-    typeof record?.bridgelat === "undefined" ||
-    typeof record?.bridgelon === "undefined" ||
-    typeof record?.rssi === "undefined" ||
-    !record?.ts || !record?.bridgename || !record?.beaconmac
+    typeof record?.bridgelat !== "number" ||
+    typeof record?.bridgelon !== "number" ||
+    typeof record?.rssi !== "number" ||
+    record?.ts?.toString()?.length !== 14 || // valid timestamp
+    typeof record?.bridgename !== "string" ||
+    typeof record?.beaconmac !== "string"
   ) {
+    // TODO: better logging
     console.warn("Database contains invalid data", record)
     return
   }
@@ -27,8 +30,8 @@ export function validateDBRecord(record: Record<string, any>): PublishedDevice |
 export function validateMqttMessage(JSONMessage: string): PublishedDevice | undefined {
   let message
   try {
+    // JSON.parse will throw an error if the message isn't valid JSON
     message = JSON.parse(JSONMessage)
-    if (!message) throw new Error("No message")
   }
   catch (e) {
     console.warn(e)
@@ -36,11 +39,14 @@ export function validateMqttMessage(JSONMessage: string): PublishedDevice | unde
     return
   }
 
-  if (!message.timestamp) message.timestamp = getCurrentTimestamp()
+  if (!message.timestamp || message?.timestamp?.toString().length != 14) {
+    console.log("timestamp added to message because it was", message?.timestamp)
+    message.timestamp = getCurrentTimestamp()
+  }
 
   if (!message || !message.bridgeCoordinates || !message.bridgeName ||
     !message.beaconMac || typeof message.rssi === "undefined") {
-    console.warn("Mqtt message is not of type MqttBridgePublish", message)
+    console.warn(`Mqtt message \`${JSONMessage}\` is not of type MqttBridgePublish`)
     return
   }
 
