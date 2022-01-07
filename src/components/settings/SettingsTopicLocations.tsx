@@ -49,7 +49,7 @@ export default function SettingsTopicLocations({ myLocation }: SettingsTopicLoca
     let tl: TopicLocation = topicLoc
     if (myLocation) tl.coords = myLocation
     setTopicLoc(tl)
-  }, [myLocation])
+  }, [myLocation, topicLoc])
 
   return (
     <Form>

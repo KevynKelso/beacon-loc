@@ -83,6 +83,7 @@ export default function SideBar(props: SideBarProps) {
                             />
                           )
                         }
+                        return <></>
                       })}
                     </tbody>
                   </Table>

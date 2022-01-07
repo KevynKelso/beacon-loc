@@ -39,7 +39,7 @@ export function validateMqttMessage(JSONMessage: string): PublishedDevice | unde
     return
   }
 
-  if (!message.timestamp || message?.timestamp?.toString().length != 14) {
+  if (!message.timestamp || message?.timestamp?.toString().length !== 14) {
     console.log("timestamp added to message because it was", message?.timestamp)
     message.timestamp = getCurrentTimestamp()
   }

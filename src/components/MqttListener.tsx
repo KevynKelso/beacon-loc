@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSubscription } from 'mqtt-react-hooks'
 import { useEasybase } from 'easybase-react'
 
@@ -62,14 +62,14 @@ export default function MqttListener() {
   const { db, e } = useEasybase()
   const { message } = useSubscription(Environment().mqttTopic);
 
-  const fetchRecords = async (since: number) => {
+  const fetchRecords = useCallback(async (since: number) => {
     return await db("RAW MQTT")
       .return()
       .where(e.gt("ts", since))
       .all() as Record<string, any>[]
-  }
+  }, [db, e])
 
-  async function insertToDb(message: PublishedDevice) {
+  const insertToDb = useCallback(async (message: PublishedDevice) => {
     const dbEntry: DBEntry = {
       bridgeLat: message.bridgeCoordinates[0],
       bridgeLon: message.bridgeCoordinates[1],
@@ -85,14 +85,14 @@ export default function MqttListener() {
     } catch (e) {
       console.warn(e)
     }
-  }
+  }, [db])
 
   // logic for recalculating based on new data from database
   useEffect(() => {
     if (settings === DefaultSettings) return
 
     fetchRecords(settings.sinceTime).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
-  }, [settings])
+  }, [settings, fetchRecords])
 
   // first database query upon client connection. Pulls last hour of info
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function MqttListener() {
       fetchRecords(getCurrentTimestamp(-1)).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
       setStartupQuery(false)
     }
-  }, [settings])
+  }, [settings, fetchRecords, startupQuery])
 
   // logic for incomming messages:
   // Put each message into the database, then process it with (processRawMessage's)
@@ -122,7 +122,7 @@ export default function MqttListener() {
       publishedDevices, receivedMessage, settings,
       setBridges, setPublishedDevices
     )
-  }, [message])
+  }, [message, insertToDb, previousMessage, publishedDevices, settings])
 
   return (
     <BeaconMap

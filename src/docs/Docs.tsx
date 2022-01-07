@@ -12,13 +12,13 @@ export default function Docs() {
         <Sidebar />
         <div className="col-span-3">
           <div>
-            <img className="" src={processRawMessageImg} />
+            <img alt="diagram for mqtt message processing" src={processRawMessageImg} />
           </div>
           <div className="border-t border-em-primary">
-            <img className="mt-3 mb-3" src={separateDevicesTooFarAwayImg} />
+            <img alt="diagram for processing devices too far away" className="mt-3 mb-3" src={separateDevicesTooFarAwayImg} />
           </div>
           <div className="border-t border-em-primary">
-            <img className="mt-3" src={convertDevicesToBridgesImg} />
+            <img alt="diagram for converting devices to bridges" className="mt-3" src={convertDevicesToBridgesImg} />
           </div>
         </div>
       </div>
