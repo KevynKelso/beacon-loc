@@ -64,7 +64,10 @@ export default function SettingsMessageProcessing({
       </Form.Group>
 
       <Form.Group className="mt-4 ml-2" controlId="formGlobalTimeout">
-        <Form.Label>Global timeout: {globalTimeout / 60} minutes</Form.Label>
+        <div className="flex">
+          <Form.Label>Global timeout: {globalTimeout / 60} minutes</Form.Label>
+          <p className="ml-3 text-red-400">development in progress</p>
+        </div>
         <Form.Control type="number" onChange={onChangeGlobalTimeout} />
         <Form.Text className="text-muted">
           Time required for a beacon to be considered lost if nobody sees it.

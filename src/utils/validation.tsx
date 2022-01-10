@@ -70,6 +70,8 @@ export function validateMqttMessage(
     return
   }
 
+  message.bridgeName = message.bridgeName.replace('\'', '')
+
   const publishMessage: PublishedDevice = {
     beaconMac: message.beaconMac.toString(),
     bridgeCoordinates: message.bridgeCoordinates,
