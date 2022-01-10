@@ -15,6 +15,7 @@ from test_case_3 import test_case_3
 from test_case_4 import test_case_4
 from test_case_5 import test_case_5
 from test_case_6 import test_case_6
+from test_case_7 import test_case_7
 
 from utils import (create_publish_data, get_random_element_from_list,
                    get_random_mac, random_coords_close_to_home)
@@ -58,7 +59,8 @@ def main():
     # test_case_3(client)
     # test_case_4(client)
     # test_case_5(client)
-    test_case_6(client)
+    # test_case_6(client)
+    test_case_7(client)
 
 
 if __name__ == "__main__":
