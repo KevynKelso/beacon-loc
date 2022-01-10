@@ -12,7 +12,7 @@ from config import HOME_LAT, HOME_LON
 from utils import create_publish_data
 
 TIME_BETWEEN_MSG = 1
-test_time = 10
+test_time = 5
 
 running = True
 
@@ -26,7 +26,7 @@ def heartbeat_bridge(client):
             loc[0],
             loc[1],
             ts,
-            "heatbeat bridge",
+            "heartbeat",
             "t-6_0",
             rssi,
         )

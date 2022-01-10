@@ -57,8 +57,8 @@ def main():
     # test_case_2(client)
     # test_case_3(client)
     # test_case_4(client)
-    test_case_5(client)
-    # test_case_6(client)
+    # test_case_5(client)
+    test_case_6(client)
 
 
 if __name__ == "__main__":

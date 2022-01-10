@@ -81,8 +81,9 @@ export default function MqttListener() {
     }
 
     try {
-      await db('RAW MQTT').insert(dbEntry).one(); // Inserts, updates, and deletes will refresh the `frame` below
+      await db('RAW MQTT').insert(dbEntry).one()
     } catch (e) {
+      // TODO: implement logging
       console.warn(e)
     }
   }, [db])
@@ -91,14 +92,18 @@ export default function MqttListener() {
   useEffect(() => {
     if (settings === DefaultSettings) return
 
-    fetchRecords(settings.sinceTime).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
+    fetchRecords(settings.sinceTime).then(
+      (records) => recalculate(records, settings, setBridges, setPublishedDevices)
+    )
   }, [settings, fetchRecords])
 
   // first database query upon client connection. Pulls last hour of info
   useEffect(() => {
     if (startupQuery) {
       // fetchRecords from last hour '-1'
-      fetchRecords(getCurrentTimestamp(-1)).then((records) => recalculate(records, settings, setBridges, setPublishedDevices))
+      fetchRecords(getCurrentTimestamp(-1)).then(
+        (records) => recalculate(records, settings, setBridges, setPublishedDevices)
+      )
       setStartupQuery(false)
     }
   }, [settings, fetchRecords, startupQuery])
@@ -110,10 +115,15 @@ export default function MqttListener() {
   // processed again.
   useEffect(() => {
     // reject bad messages, or the if the component just refreshed, don't do anything
-    if (!message?.message || typeof message.message != "string" || message.message === previousMessage) return
+    if (!message?.message || typeof message.message != "string" ||
+      message.message === previousMessage
+    ) {
+      return
+    }
     setPreviousMessage(message.message)
 
-    const receivedMessage: PublishedDevice | undefined = validateMqttMessage(message.message)
+    const receivedMessage: PublishedDevice | undefined =
+      validateMqttMessage(message.message)
     if (!receivedMessage) return
 
     insertToDb(receivedMessage)

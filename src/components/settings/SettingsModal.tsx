@@ -116,10 +116,13 @@ export default function SettingsModal(props: SettingsModalProps) {
           </Button>
         </div>
         {showQR &&
-          <div className="flex">
-            <img src='https://chart.googleapis.com/chart?cht=qr&chl=https%3A%2F%2Ffathomless-dawn-96149.herokuapp.com%2Fem-ble-bridge.apk&chs=180x180&choe=UTF-8&chld=L|2' alt='' />
-            <p className="mt-5 text-em-primary">Scan to download APK for EM-BLE-BRIDGE app</p>
-          </div>
+          <>
+            <div className="flex">
+              <img src='/apk-qr.png' alt='https://fathomless-dawn-96149.herokuapp.com/em-ble-bridge.apk' />
+              <p className="mt-5 text-em-primary">Scan to download APK for EM BLE Bridge app</p>
+            </div>
+            <p className="mt-3 text-em-primary text-sm">Or alternatively go to https://fathomless-dawn-96149.herokuapp.com/em-ble-bridge.apk</p>
+          </>
         }
       </Modal.Body>
     </Modal >

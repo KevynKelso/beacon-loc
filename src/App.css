@@ -41,6 +41,10 @@
   overflow-anchor:none;
 }
 
+.gm-style {
+    overflow: hidden;
+}
+
 .bg-prussian-blue {
     /*background-color: #172A3A;*/
     background-color: #1676A3;

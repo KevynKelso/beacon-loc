@@ -5,8 +5,8 @@ import { EasybaseProvider } from 'easybase-react'
 import ebconfig from './ebconfig'
 
 
-import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 function App() {
 
