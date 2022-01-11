@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-import { useEasybase } from 'easybase-react'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 
@@ -16,15 +15,8 @@ interface SettingsTopicLocationsProps {
 }
 
 export default function SettingsTopicLocations({ myLocation }: SettingsTopicLocationsProps) {
-  const { db } = useEasybase()
-
   const defaultTopicLoc: TopicLocation = { name: '', coords: myLocation || { lat: 0, lng: 0 } }
   const [topicLoc, setTopicLoc] = useState<TopicLocation>(defaultTopicLoc)
-
-  const fetchRecords = async () => {
-    return await db("TOPIC LOCATIONS")
-      .return().all() as Record<string, any>[]
-  }
 
   function onChangeTopicName(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault()
@@ -79,7 +71,7 @@ export default function SettingsTopicLocations({ myLocation }: SettingsTopicLoca
           Submit topic location
         </Button>
         <Button
-          onClick={() => fetchRecords().then((records) => console.log(records))}
+          onClick={() => console.log("test")}
           className="mt-3 ml-2"
           variant="success"
           size="sm"

@@ -1,9 +1,6 @@
 import Environment from './environment.config'
 import MqttListener from './components/MqttListener'
 import { Connector } from 'mqtt-react-hooks'
-import { EasybaseProvider } from 'easybase-react'
-import ebconfig from './ebconfig'
-
 
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -20,9 +17,7 @@ function App() {
         password: Environment().mqttPassword,
       }}
     >
-      <EasybaseProvider ebconfig={ebconfig}>
-        <MqttListener />
-      </EasybaseProvider>
+      <MqttListener />
     </Connector>
   );
 }
