@@ -17,6 +17,10 @@ interface SettingsTopicLocationsProps {
 export default function SettingsTopicLocations({ myLocation }: SettingsTopicLocationsProps) {
   const defaultTopicLoc: TopicLocation = { name: '', coords: myLocation || { lat: 0, lng: 0 } }
   const [topicLoc, setTopicLoc] = useState<TopicLocation>(defaultTopicLoc)
+  // I imagine here we'd be storing topic locations in the database... need some
+  // way to view them, then potentially adding more if the user chooses to in this
+  // ui. Then locations would need to get assigned to the messages if they were
+  // published on that topic. We'd have to subscribe to multiple topics.
 
   function onChangeTopicName(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault()

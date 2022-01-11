@@ -9,9 +9,11 @@ import Status from '../Status'
 import SettingsDatabase from './SettingsDatabase'
 import SettingsMessageProcessing from './SettingsMessageProcessing'
 import SettingsTopicLocations from './SettingsTopicLocations'
+import SettingsMqtt from './SettingsMqtt'
 import { MapCoords } from '../BeaconMap'
 
 import { getCurrentTimestamp } from '../../utils/timestamp'
+import Environment from '../../environment.config'
 
 
 export interface ISettings {
@@ -20,6 +22,7 @@ export interface ISettings {
   localTimeout: number          // seconds
   lostDistance: number          // km * 10^-2 ... Stupid I know, but this is best for coordinates
   sinceTime: number             // same timestamp format as json mqtt data
+  subscribeTopic: string        // topic this app will subscribe to
 }
 
 export const DefaultSettings: ISettings = {
@@ -28,6 +31,7 @@ export const DefaultSettings: ISettings = {
   localTimeout: 5,           // 5 seconds
   lostDistance: 0.01,         // approximately 1km
   sinceTime: getCurrentTimestamp(),
+  subscribeTopic: Environment().mqttTopic, // EM Beacon
 }
 
 export interface TopicLocation {
@@ -43,12 +47,12 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal(props: SettingsModalProps) {
-  // settings... should probably use reducer here instead of all this state
   const [definitivelyHereRSSI, setDefinitivelyHereRSSI] = useState<number>(DefaultSettings.definitivelyHereRSSI)
-  const [localTimeout, setLocalTimeout] = useState<number>(DefaultSettings.localTimeout)
   const [globalTimeout, setGlobalTimeout] = useState<number>(DefaultSettings.globalTimeout)
+  const [localTimeout, setLocalTimeout] = useState<number>(DefaultSettings.localTimeout)
   const [lostDistance, setLostDistance] = useState<number>(DefaultSettings.lostDistance)
   const [sinceTime, setSinceTime] = useState<number>(DefaultSettings.sinceTime)
+  const [subscribeTopic, setSubscribeTopic] = useState<string>(DefaultSettings.subscribeTopic)
 
   // component state
   const [tab, setTab] = useState<number>(1)
@@ -61,6 +65,7 @@ export default function SettingsModal(props: SettingsModalProps) {
       localTimeout: localTimeout,
       lostDistance: lostDistance,
       sinceTime: sinceTime,
+      subscribeTopic: subscribeTopic,
     }
 
     props.setSettings(settings)
@@ -85,6 +90,9 @@ export default function SettingsModal(props: SettingsModalProps) {
           <Nav.Item onClick={() => setTab(3)}>
             <Nav.Link className="text-em-primary">Topic locations</Nav.Link>
           </Nav.Item>
+          <Nav.Item onClick={() => setTab(4)}>
+            <Nav.Link className="text-em-primary">MQTT</Nav.Link>
+          </Nav.Item>
         </Nav>
 
         {tab === 1 &&
@@ -104,6 +112,9 @@ export default function SettingsModal(props: SettingsModalProps) {
         }
         {tab === 3 &&
           <SettingsTopicLocations myLocation={props.myLocation} />
+        }
+        {tab === 4 &&
+          <SettingsMqtt subscribeTopic={subscribeTopic} setSubscribeTopic={setSubscribeTopic} />
         }
         <div className="flex mt-4">
           <div className="flex-grow">

@@ -54,9 +54,9 @@ def main():
     client.connect(os.environ["TEST_HOST"], int(os.environ["TEST_PORT"]))
     client.subscribe("EM Beacon")
 
-    # test_case_1(client)
+    test_case_1(client)
     # test_case_2(client)
-    test_case_3(client)
+    # test_case_3(client)
     # test_case_4(client)
     # test_case_5(client)
     # test_case_6(client)

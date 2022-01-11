@@ -61,7 +61,7 @@ export default function MqttListener() {
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
   const [startupQuery, setStartupQuery] = useState<boolean>(true)
-  const { message } = useSubscription(Environment().mqttTopic);
+  const { message } = useSubscription(settings.subscribeTopic);
 
   const firebaseConfig = {
     apiKey: Environment().firebaseApiKey,
