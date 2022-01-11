@@ -31,7 +31,7 @@ def test_case_3(client):
                 mac = f"t-3_b-{i+1}-{j + 1}"
                 rssi = int(random.uniform(-25, -100))
                 data = create_publish_data(lat, lon, ts, name, mac, rssi)
-                client.publish("test", json.dumps(data))
+                client.publish("EM Beacon", json.dumps(data))
                 messagesSent += 1
                 time.sleep(TIME_BETWEEN_MSG)
 

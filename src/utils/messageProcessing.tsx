@@ -134,6 +134,8 @@ export function processRawMessage(
   return updateReactState(updaterBridges, updaterDevices, devices)
 }
 
+// recalculate assumes any type of data from database. Validation happens inside
+// this function
 export function recalculate(
   records: Record<string, any>[],
   settings: ISettings,

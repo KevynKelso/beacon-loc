@@ -5,12 +5,12 @@ export function validateDBRecord(
   record: Record<string, any>
 ): PublishedDevice | undefined {
   if (
-    typeof record?.bridgelat !== "number" ||
-    typeof record?.bridgelon !== "number" ||
+    typeof record?.bridgeLat !== "number" ||
+    typeof record?.bridgeLng !== "number" ||
     typeof record?.rssi !== "number" ||
     record?.ts?.toString()?.length !== 14 || // valid timestamp
-    typeof record?.bridgename !== "string" ||
-    typeof record?.beaconmac !== "string"
+    typeof record?.bridgeName !== "string" ||
+    typeof record?.beaconMac !== "string"
   ) {
     // TODO: better logging
     console.warn("Database contains invalid data", record)
@@ -18,9 +18,9 @@ export function validateDBRecord(
   }
 
   const databaseDevice: PublishedDevice = {
-    beaconMac: record.beaconmac,
-    bridgeCoordinates: [record.bridgelat, record.bridgelon],
-    bridgeName: record.bridgename,
+    beaconMac: record.beaconMac,
+    bridgeCoordinates: [record.bridgeLat, record.bridgeLng],
+    bridgeName: record.bridgeName,
     rssi: record.rssi,
     seenTimestamp: record.ts,
     timestamp: record.ts,

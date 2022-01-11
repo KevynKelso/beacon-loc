@@ -36,7 +36,6 @@ const BeaconMap = compose(
   const [activeMarker, setActiveMarker] = useState<number>(-1)
   const [firstLoad, setFirstLoad] = useState<boolean>(true)
 
-
   function onMarkerClick(index: number) {
     if (index === activeMarker) {
       return setActiveMarker(-1)
@@ -112,6 +111,7 @@ const BeaconMap = compose(
       </GoogleMap>
 
       <SideBar
+        loading={props.loading}
         bridges={props.detectedBridges}
         filters={filters}
         setFilters={setFilters}

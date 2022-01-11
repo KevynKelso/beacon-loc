@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSubscription } from 'mqtt-react-hooks'
-import { useEasybase } from 'easybase-react'
 
 import BeaconMap from './BeaconMap'
 import Environment from '../environment.config'
@@ -9,6 +8,9 @@ import { ISettings, DefaultSettings } from './settings/SettingsModal'
 import { getCurrentTimestamp } from '../utils/timestamp'
 import { processRawMessage, recalculate } from '../utils/messageProcessing'
 import { validateMqttMessage } from '../utils/validation'
+
+import { getDatabase, ref, push, set, onValue, query, orderByChild, startAt } from 'firebase/database'
+import { initializeApp } from 'firebase/app'
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -29,7 +31,7 @@ export interface DBEntry {
   beaconMac: string
   rssi: number
   bridgeLat: number
-  bridgeLon: number
+  bridgeLng: number
   bridgeName: string
   pdu: number
 }
@@ -54,25 +56,48 @@ export interface Beacon {
 // processing dependent on settings)
 export default function MqttListener() {
   const [bridges, setBridges] = useState<DetectedBridge[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
   const [previousMessage, setPreviousMessage] = useState<string>("")
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
   const [startupQuery, setStartupQuery] = useState<boolean>(true)
-
-  const { db, e } = useEasybase()
   const { message } = useSubscription(Environment().mqttTopic);
 
+  const firebaseConfig = {
+    apiKey: Environment().firebaseApiKey,
+    authDomain: Environment().firebaseAuthDomain,
+    databaseURL: Environment().firebaseUrl,
+    projectId: "beacon-locator-bf22b",
+    storageBucket: "beacon-locator-bf22b.appspot.com",
+    messagingSenderId: "457643290964",
+    appId: "1:457643290964:web:2c8f57af3fd55b4a3b18c1",
+    measurementId: "G-TW71FFP3RH"
+  }
+  const app = initializeApp(firebaseConfig)
+  const fireDB = getDatabase(app)
+
   const fetchRecords = useCallback(async (since: number) => {
-    return await db("RAW MQTT")
-      .return()
-      .where(e.gt("ts", since))
-      .all() as Record<string, any>[]
-  }, [db, e])
+    setLoading(true)
+    let records: Record<string, any>[] = []
+
+    const mqttMessageListRef = query(ref(fireDB, 'RAW MQTT'), orderByChild('ts'), startAt(since.toString()))
+    onValue(mqttMessageListRef, (snapshot: any) => {
+      snapshot.forEach((childSnapshot: any) => {
+        const childData = childSnapshot.val();
+        records.push(childData)
+      })
+      recalculate(records, settings, setBridges, setPublishedDevices)
+      setLoading(false)
+    }, {
+      onlyOnce: true
+    })
+
+  }, [fireDB, settings])
 
   const insertToDb = useCallback(async (message: PublishedDevice) => {
     const dbEntry: DBEntry = {
       bridgeLat: message.bridgeCoordinates[0],
-      bridgeLon: message.bridgeCoordinates[1],
+      bridgeLng: message.bridgeCoordinates[1],
       ts: message.timestamp,
       bridgeName: message.bridgeName,
       beaconMac: message.beaconMac,
@@ -81,29 +106,27 @@ export default function MqttListener() {
     }
 
     try {
-      await db('RAW MQTT').insert(dbEntry).one()
+      const mqttMessageListRef = ref(fireDB, 'RAW MQTT')
+      const newMqttMessageRef = push(mqttMessageListRef)
+      set(newMqttMessageRef, dbEntry)
     } catch (e) {
       // TODO: implement logging
       console.warn(e)
     }
-  }, [db])
+  }, [fireDB])
 
   // logic for recalculating based on new data from database
   useEffect(() => {
     if (settings === DefaultSettings) return
 
-    fetchRecords(settings.sinceTime).then(
-      (records) => recalculate(records, settings, setBridges, setPublishedDevices)
-    )
+    fetchRecords(settings.sinceTime)
   }, [settings, fetchRecords])
 
   // first database query upon client connection. Pulls last hour of info
   useEffect(() => {
     if (startupQuery) {
       // fetchRecords from last hour '-1'
-      fetchRecords(getCurrentTimestamp(-1)).then(
-        (records) => recalculate(records, settings, setBridges, setPublishedDevices)
-      )
+      fetchRecords(getCurrentTimestamp(-1))
       setStartupQuery(false)
     }
   }, [settings, fetchRecords, startupQuery])
@@ -137,6 +160,7 @@ export default function MqttListener() {
   return (
     <BeaconMap
       //@ts-ignore
+      loading={loading}
       detectedBridges={bridges}
       setSettings={setSettings}
     />

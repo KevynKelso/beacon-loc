@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import Button from 'react-bootstrap/Button'
 import Table from 'react-bootstrap/Table'
+import Spinner from 'react-bootstrap/Spinner'
 
 import FiltersBar, { Filters, BridgeOrBeacon } from './FiltersBar'
 import NavBar from './Navbar'
@@ -11,6 +12,7 @@ import SideBarTableElement from './SideBarTableElement'
 import { MapCoords } from './BeaconMap'
 
 interface SideBarProps {
+  loading: boolean
   activeMarker: number
   bridges: DetectedBridge[]
   className?: string
@@ -58,6 +60,9 @@ export default function SideBar(props: SideBarProps) {
         {showBridges &&
           <div className="mt-3">
             <p className="text-em-primary text-2xl font-bold">DETECTED BRIDGES</p>
+            {props.loading &&
+              <Spinner className="text-em-primary" animation="border" role="status"> <span className="visually-hidden">Loading...</span> </Spinner>
+            }
             {props.bridges.length > 0 ?
               <div>
                 <div className="max-h-96 overflow-y-scroll">
@@ -88,10 +93,6 @@ export default function SideBar(props: SideBarProps) {
                     </tbody>
                   </Table>
                 </div>
-                {
-                  props.detectedDevicesSum ? <p>Total devices found: {props.detectedDevicesSum}</p>
-                    : null
-                }
               </div>
               : <p className="text-em-primary">No messages in the last hour</p>
             }

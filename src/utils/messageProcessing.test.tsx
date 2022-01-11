@@ -332,7 +332,7 @@ test('invalid db record (2)', () => {
   let updaterDevicesCalled = 0
 
   const records: Record<string, any>[] = [{
-    bridgelat: undefined
+    bridgeLat: undefined
   }]
   let bridges: DetectedBridge[] = []
   let devices: PublishedDevice[] = []
@@ -358,12 +358,12 @@ test('valid db record (3)', () => {
   let updaterDevicesCalled = 0
 
   const records: Record<string, any>[] = [{
-    bridgelat: 5,
-    bridgelon: 5,
+    bridgeLat: 5,
+    bridgeLng: 5,
     rssi: -60,
     ts: 12345678901234,
-    bridgename: "dbrecord",
-    beaconmac: "dbmac",
+    bridgeName: "dbrecord",
+    beaconMac: "dbmac",
   }]
   let bridges: DetectedBridge[] = []
   let devices: PublishedDevice[] = []

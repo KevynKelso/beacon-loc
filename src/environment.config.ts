@@ -1,5 +1,8 @@
 export default function Environment() {
   const environmentType = process.env.REACT_APP_ENVIRONMENT || "production"
+  const firebaseApiKey = process.env.REACT_APP_FIREBASEAPIKEY || ""
+  const firebaseAuthDomain = process.env.REACT_APP_FIREBASEAUTHDOMAIN || ""
+  const firebaseUrl = process.env.REACT_APP_FIREBASEURL || ""
   const googleMapsApiKey = process.env.REACT_APP_GOOGLEMAPSAPIKEY || ""
   const mqttBrokerUrl = process.env.REACT_APP_MQTTBROKERURL || ""
   const mqttPassword = process.env.REACT_APP_MQTTPASSWORD || ""
@@ -9,6 +12,9 @@ export default function Environment() {
 
   const environment = {
     environmentType: environmentType,
+    firebaseApiKey: firebaseApiKey,
+    firebaseAuthDomain: firebaseAuthDomain,
+    firebaseUrl: firebaseUrl,
     googleMapsApiKey: googleMapsApiKey,
     mqttBrokerUrl: mqttBrokerUrl,
     mqttPassword: mqttPassword,
@@ -18,7 +24,8 @@ export default function Environment() {
   }
 
   if (!mqttPassword || !mqttBrokerUrl || !mqttUsername ||
-    !googleMapsApiKey || !mqttPort || !mqttTopic) {
+    !googleMapsApiKey || !mqttPort || !mqttTopic || !firebaseApiKey ||
+    !firebaseAuthDomain || !firebaseUrl) {
     throw new Error("Missing environment variables")
   }
 

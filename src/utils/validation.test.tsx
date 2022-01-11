@@ -2,12 +2,12 @@ import { validateDBRecord, validateMqttMessage } from "./validation"
 
 test('validateDBRecord invalid mac', () => {
   const dbRecord: Record<string, any> = {
-    bridgelat: 0,
-    bridgelon: 0,
+    bridgeLat: 0,
+    bridgeLng: 0,
     rssi: 0,
     ts: 12345678901234,
-    bridgename: "test",
-    beaconmac: 5,
+    bridgeName: "test",
+    beaconMac: 5,
   }
   const device = validateDBRecord(dbRecord)
 
@@ -16,12 +16,12 @@ test('validateDBRecord invalid mac', () => {
 
 test('validateDBRecord success', () => {
   const dbRecord: Record<string, any> = {
-    bridgelat: 0,
-    bridgelon: 0,
+    bridgeLat: 0,
+    bridgeLng: 0,
     rssi: 0,
     ts: 12345678901234,
-    bridgename: "test",
-    beaconmac: "success",
+    bridgeName: "test",
+    beaconMac: "success",
   }
   const device = validateDBRecord(dbRecord)
 
