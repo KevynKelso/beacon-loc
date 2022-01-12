@@ -18,6 +18,7 @@ import Environment from '../../environment.config'
 
 export interface ISettings {
   definitivelyHereRSSI: number  // dB
+  errorReports: boolean         // used for whether or not to send logging email to EM
   globalTimeout: number         // seconds
   localTimeout: number          // seconds
   lostDistance: number          // km * 10^-2 ... Stupid I know, but this is best for coordinates
@@ -27,6 +28,7 @@ export interface ISettings {
 
 export const DefaultSettings: ISettings = {
   definitivelyHereRSSI: -40, //-40 dB might be a good default idk
+  errorReports: false,
   globalTimeout: 5 * 60,     // 5 mins
   localTimeout: 5,           // 5 seconds
   lostDistance: 0.01,         // approximately 1km
@@ -40,6 +42,7 @@ export interface TopicLocation {
 }
 
 interface SettingsModalProps {
+  errorReports: boolean
   myLocation?: MapCoords
   setSettings: (settings: ISettings) => void
   setShow: (show: boolean) => void
@@ -61,6 +64,7 @@ export default function SettingsModal(props: SettingsModalProps) {
   function onSubmitSettings() {
     const settings: ISettings = {
       definitivelyHereRSSI: definitivelyHereRSSI,
+      errorReports: props.errorReports,
       globalTimeout: globalTimeout,
       localTimeout: localTimeout,
       lostDistance: lostDistance,

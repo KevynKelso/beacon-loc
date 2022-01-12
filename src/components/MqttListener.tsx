@@ -8,6 +8,7 @@ import { ISettings, DefaultSettings } from './settings/SettingsModal'
 import { getCurrentTimestamp } from '../utils/timestamp'
 import { processRawMessage, recalculate } from '../utils/messageProcessing'
 import { validateMqttMessage } from '../utils/validation'
+import { logError } from '../utils/emailLoggin'
 
 import { getDatabase, ref, push, set, onValue, query, orderByChild, startAt } from 'firebase/database'
 import { initializeApp } from 'firebase/app'
@@ -60,8 +61,12 @@ export default function MqttListener() {
   const [previousMessage, setPreviousMessage] = useState<string>("")
   const [publishedDevices, setPublishedDevices] = useState<PublishedDevice[]>([])
   const [settings, setSettings] = useState<ISettings>(DefaultSettings)
-  const [startupQuery, setStartupQuery] = useState<boolean>(true)
+  const [startup, setStartup] = useState<boolean>(true)
   const { message } = useSubscription(settings.subscribeTopic);
+  // default exception handler
+  window.onerror = function(message, source, lineno, colno, error) {
+    logError(settings.errorReports, "Some error occured", `message: ${message} source: ${source} line#: ${lineno} col#: ${colno} error: ${error}`)
+  }
 
   const firebaseConfig = {
     apiKey: Environment().firebaseApiKey,
@@ -95,25 +100,24 @@ export default function MqttListener() {
   }, [fireDB, settings])
 
   const insertToDb = useCallback(async (message: PublishedDevice) => {
-    const dbEntry: DBEntry = {
-      bridgeLat: message.bridgeCoordinates[0],
-      bridgeLng: message.bridgeCoordinates[1],
-      ts: message.timestamp,
-      bridgeName: message.bridgeName,
-      beaconMac: message.beaconMac,
-      rssi: message.rssi,
-      pdu: 0,
-    }
-
     try {
+      const dbEntry: DBEntry = {
+        bridgeLat: message.bridgeCoordinates[0],
+        bridgeLng: message.bridgeCoordinates[1],
+        ts: message.timestamp,
+        bridgeName: message.bridgeName,
+        beaconMac: message.beaconMac,
+        rssi: message.rssi,
+        pdu: 0,
+      }
+
       const mqttMessageListRef = ref(fireDB, 'RAW MQTT')
       const newMqttMessageRef = push(mqttMessageListRef)
       set(newMqttMessageRef, dbEntry)
     } catch (e) {
-      // TODO: implement logging
-      console.warn(e)
+      logError(settings.errorReports, "Could not insert record into db", `MQTT Message: ${JSON.stringify(message)}\nerror: ${e}`)
     }
-  }, [fireDB])
+  }, [fireDB, settings.errorReports])
 
   // logic for recalculating based on new data from database
   useEffect(() => {
@@ -124,12 +128,17 @@ export default function MqttListener() {
 
   // first database query upon client connection. Pulls last hour of info
   useEffect(() => {
-    if (startupQuery) {
+    if (startup) {
+      if (!settings.errorReports) {
+        let newSettings = settings
+        newSettings.errorReports = window.confirm("If a problem occurs, would you like to share crash information with EM Microelectronic?")
+        setSettings(newSettings)
+      }
       // fetchRecords from last hour '-1'
       fetchRecords(getCurrentTimestamp(-1))
-      setStartupQuery(false)
+      setStartup(false)
     }
-  }, [settings, fetchRecords, startupQuery])
+  }, [settings, fetchRecords, startup])
 
   // logic for incomming messages:
   // Put each message into the database, then process it with (processRawMessage's)
@@ -146,7 +155,7 @@ export default function MqttListener() {
     setPreviousMessage(message.message)
 
     const receivedMessage: PublishedDevice | undefined =
-      validateMqttMessage(message.message)
+      validateMqttMessage(message.message, settings.errorReports)
     if (!receivedMessage) return
 
     insertToDb(receivedMessage)
@@ -163,6 +172,7 @@ export default function MqttListener() {
       loading={loading}
       detectedBridges={bridges}
       setSettings={setSettings}
+      errorReports={settings.errorReports}
     />
   )
 }

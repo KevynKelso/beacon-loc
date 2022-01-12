@@ -35,8 +35,6 @@ function separateDevicesTooFarAway(
   inDevice: PublishedDevice,
   devices: PublishedDevice[],
   settings: ISettings,
-  //updaterBridges: DetectedBridgeUpdater,
-  //updaterDevices: PublishedDeviceUpdater,
 ): PublishedDevice[] {
   // find all the published devices associated w/ this received message listener
   const bridgeDevices: PublishedDevice[] | undefined =
@@ -160,7 +158,8 @@ export function recalculate(
   // processRawMessage for every element returned in the database
   records.forEach((record: Record<string, any>) => {
     // need to build the array of publishedDevices first, then set the state
-    const device: PublishedDevice | undefined = validateDBRecord(record)
+    const device: PublishedDevice | undefined =
+      validateDBRecord(record, settings.errorReports)
     if (!device) return
     processRawMessage(
       newPublishedDevices, device, settings,

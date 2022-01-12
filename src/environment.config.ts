@@ -9,6 +9,8 @@ export default function Environment() {
   const mqttPort = parseInt(process.env.REACT_APP_MQTTPORT || "")
   const mqttTopic = process.env.REACT_APP_MQTTTOPIC || ""
   const mqttUsername = process.env.REACT_APP_MQTTUSERNAME || ""
+  const smtpUserId = process.env.REACT_APP_SMTPUSERID || ""
+  const smtpServiceId = process.env.REACT_APP_SMTPSERVICEID || ""
 
   const environment = {
     environmentType: environmentType,
@@ -21,11 +23,13 @@ export default function Environment() {
     mqttPort: mqttPort,
     mqttTopic: mqttTopic,
     mqttUsername: mqttUsername,
+    smtpUserId: smtpUserId,
+    smtpServiceId: smtpServiceId,
   }
 
   if (!mqttPassword || !mqttBrokerUrl || !mqttUsername ||
     !googleMapsApiKey || !mqttPort || !mqttTopic || !firebaseApiKey ||
-    !firebaseAuthDomain || !firebaseUrl) {
+    !firebaseAuthDomain || !firebaseUrl || !smtpUserId || !smtpServiceId) {
     throw new Error("Missing environment variables")
   }
 

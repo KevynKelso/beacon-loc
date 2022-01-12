@@ -121,6 +121,7 @@ const BeaconMap = compose(
         onGoToClick={onGoToClick}
         setMapCenterMyLocation={setMapCenterMyLocation}
         myLocation={mapCenter}
+        errorReports={props.errorReports}
       />
     </>
   )

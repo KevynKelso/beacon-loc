@@ -12,12 +12,13 @@ import SideBarTableElement from './SideBarTableElement'
 import { MapCoords } from './BeaconMap'
 
 interface SideBarProps {
-  loading: boolean
+  errorReports: boolean
   activeMarker: number
   bridges: DetectedBridge[]
   className?: string
   detectedDevicesSum?: number
   filters: Filters
+  loading: boolean
   myLocation?: MapCoords
   onGoToClick: (d: DetectedBridge) => void
   onTableClick: (d: DetectedBridge) => void
@@ -55,6 +56,7 @@ export default function SideBar(props: SideBarProps) {
             setSettings={props.setSettings}
             showBridges={showBridges}
             myLocation={props.myLocation}
+            errorReports={props.errorReports}
           />
         </div>
         {showBridges &&

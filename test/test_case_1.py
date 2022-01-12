@@ -2,10 +2,11 @@ import datetime
 import json
 import time
 
-from config import HOME_LAT, HOME_LON, NUM_BEACONS
+from config import HOME_LAT, HOME_LON
 
 from utils import create_publish_data
 
+NUM_BEACONS = 1
 
 # beacons move between 2 listeners
 def test_case_1(client):
@@ -20,12 +21,12 @@ def test_case_1(client):
         ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         rssi = -10
         data = create_publish_data(latA, lngA, ts, "A", f"t-1_b-{i}", rssi)
-        client.publish("test", json.dumps(data))
+        client.publish("EM Beacon", json.dumps(data))
         time.sleep(1)
     for i in range(0, NUM_BEACONS):
         # B
         rssi = -10
         ts = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         data = create_publish_data(latB, lngB, ts, "B", f"t-1_b-{i}", rssi)
-        client.publish("test", json.dumps(data))
+        client.publish("EM Beacon", json.dumps(data))
         time.sleep(1)

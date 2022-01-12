@@ -8,6 +8,7 @@ import { MapCoords } from './BeaconMap'
 
 interface NavbarProps {
   className?: string
+  errorReports: boolean
   myLocation?: MapCoords
   setSettings: (settings: ISettings) => void
   showBridges: boolean
@@ -37,6 +38,7 @@ export default function Navbar(props: NavbarProps) {
         Settings
       </Button>
       <SettingsModal
+        errorReports={props.errorReports}
         myLocation={props.myLocation}
         setSettings={props.setSettings}
         setShow={setShowSettingsModal}

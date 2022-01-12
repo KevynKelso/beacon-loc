@@ -1,8 +1,10 @@
 import { PublishedDevice } from '../components/MqttListener'
 import { getCurrentTimestamp } from '../utils/timestamp'
+import { logError } from '../utils/emailLoggin'
 
 export function validateDBRecord(
-  record: Record<string, any>
+  record: Record<string, any>,
+  errorReports: boolean,
 ): PublishedDevice | undefined {
   if (
     typeof record?.bridgeLat !== "number" ||
@@ -12,8 +14,7 @@ export function validateDBRecord(
     typeof record?.bridgeName !== "string" ||
     typeof record?.beaconMac !== "string"
   ) {
-    // TODO: better logging
-    console.warn("Database contains invalid data", record)
+    logError(errorReports, "Database contains invalid data", `Record ${JSON.stringify(record)}`)
     return
   }
 
@@ -30,7 +31,8 @@ export function validateDBRecord(
 }
 
 export function validateMqttMessage(
-  JSONMessage: string
+  JSONMessage: string,
+  errorReports: boolean,
 ): PublishedDevice | undefined {
   let message
   try {
@@ -38,9 +40,7 @@ export function validateMqttMessage(
     message = JSON.parse(JSONMessage)
   }
   catch (e) {
-    // TODO: log here
-    console.warn(e)
-    console.warn("invalid message", JSONMessage)
+    logError(errorReports, "Recieved an invalid mqtt message", `Message: ${JSONMessage} error: ${e}`)
     return
   }
 
