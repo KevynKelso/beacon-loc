@@ -146,6 +146,8 @@ export function recalculate(
   // need the loop below to happen synchronously
   let newPublishedDevices: PublishedDevice[] = []
   let newBridges: DetectedBridge[] = []
+  // records should be sorted by oldest to newest
+  records = records.sort((a, b) => parseInt(a.ts) - parseInt(b.ts))
 
   // callbacks for building new state
   function setNewBridges(bridges: DetectedBridge[]) {

@@ -10,8 +10,14 @@ import { processRawMessage, recalculate } from '../utils/messageProcessing'
 import { validateMqttMessage } from '../utils/validation'
 import { logError } from '../utils/emailLoggin'
 
-import { getDatabase, ref, push, set, onValue, query, orderByChild, startAt } from 'firebase/database'
-import { initializeApp } from 'firebase/app'
+//import { getDatabase, ref, push, set, onValue, query, orderByChild, startAt } from 'firebase/database'
+//import { initializeApp } from 'firebase/app'
+
+import { API } from 'aws-amplify'
+import { GraphQLOptions, GraphQLResult } from '@aws-amplify/api-graphql';
+import { createRawMqtt } from '../graphql/mutations'
+import { listRawMqtts } from '../graphql/queries'
+import { CreateRawMqttInput } from '../API'
 
 interface MqttBridgePublish {
   beaconMac: string
@@ -68,56 +74,55 @@ export default function MqttListener() {
     logError(settings.errorReports, "Some error occured", `message: ${message} source: ${source} line#: ${lineno} col#: ${colno} error: ${error}`)
   }
 
-  const firebaseConfig = {
-    apiKey: Environment().firebaseApiKey,
-    authDomain: Environment().firebaseAuthDomain,
-    databaseURL: Environment().firebaseUrl,
-    projectId: "beacon-locator-bf22b",
-    storageBucket: "beacon-locator-bf22b.appspot.com",
-    messagingSenderId: "457643290964",
-    appId: "1:457643290964:web:2c8f57af3fd55b4a3b18c1",
-    measurementId: "G-TW71FFP3RH"
-  }
-  const app = initializeApp(firebaseConfig)
-  const fireDB = getDatabase(app)
-
   const fetchRecords = useCallback(async (since: number) => {
     setLoading(true)
-    let records: Record<string, any>[] = []
-
-    const mqttMessageListRef = query(ref(fireDB, 'RAW MQTT'), orderByChild('ts'), startAt(since.toString()))
-    onValue(mqttMessageListRef, (snapshot: any) => {
-      snapshot.forEach((childSnapshot: any) => {
-        const childData = childSnapshot.val();
-        records.push(childData)
+    const options: GraphQLOptions = {
+      query: listRawMqtts,
+      variables: {
+        filter: {
+          ts: { gt: since.toString() },
+        },
+      }
+    }
+    const apiReq = async () => await API.graphql(options)
+    apiReq()
+      .then((result: any) => {
+        recalculate(result?.data?.listRawMqtts?.items, settings, setBridges, setPublishedDevices)
       })
-      recalculate(records, settings, setBridges, setPublishedDevices)
-      setLoading(false)
-    }, {
-      onlyOnce: true
-    })
-
-  }, [fireDB, settings])
+      .catch(
+        (result) => logError(
+          settings.errorReports, "Could not fetch records",
+          `error: ${JSON.stringify(result)}`
+        )
+      )
+      .finally(() => setLoading(false))
+  }, [])
 
   const insertToDb = useCallback(async (message: PublishedDevice) => {
-    try {
-      const dbEntry: DBEntry = {
-        bridgeLat: message.bridgeCoordinates[0],
-        bridgeLng: message.bridgeCoordinates[1],
-        ts: message.timestamp,
-        bridgeName: message.bridgeName,
-        beaconMac: message.beaconMac,
-        rssi: message.rssi,
-        pdu: 0,
-      }
-
-      const mqttMessageListRef = ref(fireDB, 'RAW MQTT')
-      const newMqttMessageRef = push(mqttMessageListRef)
-      set(newMqttMessageRef, dbEntry)
-    } catch (e) {
-      logError(settings.errorReports, "Could not insert record into db", `MQTT Message: ${JSON.stringify(message)}\nerror: ${e}`)
+    const mqttMessage: CreateRawMqttInput = {
+      bridgeLat: message.bridgeCoordinates[0],
+      bridgeLng: message.bridgeCoordinates[1],
+      ts: message.timestamp.toString(),
+      bridgeName: message.bridgeName,
+      beaconMac: message.beaconMac,
+      rssi: message.rssi,
+      pdu: 0,
     }
-  }, [fireDB, settings.errorReports])
+
+    const options: GraphQLOptions = {
+      query: createRawMqtt,
+      variables: { input: mqttMessage },
+    }
+
+    const apiReq = async () => await API.graphql(options)
+    apiReq()
+      .catch(
+        (result) => logError(
+          settings.errorReports, "Could not insert record into db",
+          `MQTT Message: ${JSON.stringify(message)} error: ${JSON.stringify(result)}`
+        )
+      )
+  }, [settings.errorReports])
 
   // logic for recalculating based on new data from database
   useEffect(() => {
@@ -129,7 +134,7 @@ export default function MqttListener() {
   // first database query upon client connection. Pulls last hour of info
   useEffect(() => {
     if (startup) {
-      if (!settings.errorReports) {
+      if (!settings.errorReports && Environment().environmentType === "production") {
         let newSettings = settings
         newSettings.errorReports = window.confirm("If a problem occurs, would you like to share crash information with EM Microelectronic?")
         setSettings(newSettings)

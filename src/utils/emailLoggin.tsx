@@ -17,7 +17,9 @@ export function logError(errorReports: boolean, message: string, additionalInfo?
     last = now
     if (Environment().environmentType === "production") {
       emailjs.send(Environment().smtpServiceId, "template_29uvvnd", { "message": message, "additional_info": additionalInfo.toString() }, Environment().smtpUserId).then(() => console.log("sent"))
+      return
     }
+    console.warn(message, additionalInfo)
     return
   }
   console.log("rate limited email sending")
