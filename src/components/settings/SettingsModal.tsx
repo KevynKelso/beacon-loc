@@ -133,7 +133,7 @@ export default function SettingsModal(props: SettingsModalProps) {
         {showQR &&
           <>
             <div className="flex">
-              <img src='/apk-qr.png' alt='https://fathomless-dawn-96149.herokuapp.com/em-ble-bridge.apk' />
+              <img src='/apk-qr.png' alt='https://www.embeacons.com/em-ble-bridge.apk' />
               <p className="mt-5 text-em-primary">Scan to download APK for EM BLE Bridge app</p>
             </div>
             <p className="mt-3 text-em-primary text-sm">Or alternatively go to https://fathomless-dawn-96149.herokuapp.com/em-ble-bridge.apk</p>
