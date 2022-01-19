@@ -13,12 +13,10 @@ function App() {
 
   return (
     <Connector
-      brokerUrl={Environment().mqttBrokerUrl}
+      brokerUrl={'wss://34.229.84.136'}
       options={{
         keepalive: 0,
-        port: Environment().mqttPort,
-        username: Environment().mqttUsername,
-        password: Environment().mqttPassword,
+        port: 9001,
       }}
     >
       <MqttListener />

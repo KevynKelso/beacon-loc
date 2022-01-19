@@ -30,6 +30,7 @@ export default function Environment() {
   if (!mqttPassword || !mqttBrokerUrl || !mqttUsername ||
     !googleMapsApiKey || !mqttPort || !mqttTopic || !firebaseApiKey ||
     !firebaseAuthDomain || !firebaseUrl || !smtpUserId || !smtpServiceId) {
+    // probably not a great idea to throw an error here
     throw new Error("Missing environment variables")
   }
 
