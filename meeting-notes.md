@@ -42,7 +42,7 @@ Is there a better way to get notified of problems?
 ## Notes
 - queue up sending mqtt messages, send on a background thread
 - strings need to be string resouces
-- use isEmpty methods
+- use isEmpty methods DONE
 - android activity lifecycle
 - There might be a better way to send email
 - crashlytics might be a better way than sending email to myself

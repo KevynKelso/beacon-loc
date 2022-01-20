@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - Update path for pre commit hook
 - Remove yarn; update readme
 - Update tailwind version
+- Update qr code for embeacons.com; add changelog generation to pre commit
 
 ### Documentation
 
