@@ -102,12 +102,12 @@ export default function SideBarTableElement(props: SideBarTableElementProps) {
         className={props.activeMarker === props.idx ? "bg-dark-sky-blue" : rowClasses}
       >
         <td
-          className={props.activeMarker === props.idx ? "text-white" : "underline text-white"}
+          className={props.activeMarker === props.idx ? "text-white cursor-pointer" : "cursor-pointer underline text-white"}
         >
           {truncatedName}
         </td>
         <td
-          className={props.activeMarker === props.idx ? "text-gray-100" : "text-white"}
+          className={props.activeMarker === props.idx ? "text-gray-100 cursor-pointer" : "cursor-pointer text-white"}
         >
           {props.bridge.beacons?.length || 0}</td>
       </tr>
